@@ -24,12 +24,12 @@
 
 <body>
     <header>
-        <button id="build-macro">Build Macro Code</button>
+        <button id="build-macro">Build Macro</button>
         <select id="action">
             <option selected="true">move</option>
             <option value="[]">text</option>
             <option value="//">comment</option>
-            <option>copy</option>
+            <option value="copy">copy selection</option>
             <option value="copy-word">copy word</option>
             <option value="copy-line">copy line</option>
             <option value="copy-trimmed-line">copy trimmed line</option>
@@ -83,6 +83,8 @@
             const checkSelect = document.querySelector("#select");
             const content = document.querySelector("body > main > section");
             const errors = document.querySelector("body > main > summary");
+            selectAction.onchange = event => 
+                selectMove.disabled = event.target.selectedIndex != 0;
             editValue.onkeydown = event => {
                 if (!valueFilter.has(event.key) && event.key != "Backspace")
                     event.preventDefault();
@@ -145,7 +147,7 @@
                 else if (event.data.innerHTML)
                     content.innerHTML = event.data.innerHTML;
             }; //window.onmessage
-
+            selectAction.focus();
         }; //window.onload
     </script>
 </body>
