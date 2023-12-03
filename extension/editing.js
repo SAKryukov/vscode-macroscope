@@ -57,7 +57,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         return null;
     }; //firstNonblank
 
-    const moveToAnotherWord = async (textEditor, backward, value, select) => {
+    const moveToOneAnotherWord = async (textEditor, backward, select) => {
         const selection = textEditor.selection
         const line = textEditor.document.lineAt(selection.start);
         const lineRange = line.range;
@@ -77,8 +77,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         const size = backward
             ? selectionAt - targetOffset
             : targetOffset - selectionAt;
+        await cursorMove(direction, "character", size, select);
+    } //moveToOneAnotherWord
+
+    const moveToAnotherWord = async (textEditor, backward, value, select) => {
         for (let index = 0; index < value; ++index)
-            await cursorMove(direction, "character", size, select);
+            await moveToOneAnotherWord(textEditor, backward, select);
     } //moveToAnotherWord
 
     const setCursorMagicWords = (verb, unit) => { return { verb: verb, unit: unit }; };
