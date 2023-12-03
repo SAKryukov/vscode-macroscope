@@ -57,7 +57,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         return null;
     }; //firstNonblank
 
-    const moveToAnotherWord = async (textEditor, backward, select) => {
+    const moveToAnotherWord = async (textEditor, backward, value, select) => {
         const selection = textEditor.selection
         const line = textEditor.document.lineAt(selection.start);
         const lineRange = line.range;
@@ -65,8 +65,8 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         const lineStart = textEditor.document.offsetAt(lineRange.start);
         const selectionAt = textEditor.document.offsetAt(selection.start);
         const subLine = backward
-            ? lineText.substring(0, selectionAt)
-            : lineText.substring(selectionAt);
+            ? lineText.substring(0, selectionAt - lineStart)
+            : lineText.substring(selectionAt - lineStart);
         const relativeWordPosition = firstNonblank(subLine, backward);
         if (relativeWordPosition == null)
             return;
@@ -77,7 +77,8 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         const size = backward
             ? selectionAt - targetOffset
             : targetOffset - selectionAt;
-        await cursorMove(direction, "character", size, select);
+        for (let index = 0; index < value; ++index)
+            await cursorMove(direction, "character", size, select);
     } //moveToAnotherWord
 
     const setCursorMagicWords = (verb, unit) => { return { verb: verb, unit: unit }; };
@@ -167,10 +168,10 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                             await moveToWord(textEditor, false);
                             break;
                         case languageEngine.enumerationMoveLocation.next:
-                            await moveToAnotherWord(textEditor, false, operation.select);
+                            await moveToAnotherWord(textEditor, false, operation.value, operation.select);
                             break;
                         case languageEngine.enumerationMoveLocation.previous:
-                            await moveToAnotherWord(textEditor, true, operation.select);
+                            await moveToAnotherWord(textEditor, true, operation.value, operation.select);
                             break;
                     } //swithch word moves not covered by cursorMove                  
                 } //if word moves not covered by cursorMove
