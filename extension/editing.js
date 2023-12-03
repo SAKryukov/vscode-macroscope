@@ -161,8 +161,13 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                             verbUnit = setCursorMagicWords("prevBlankLine", "line");
                         break;
                 } //switch
-                if (verbUnit)
-                    await cursorMove(verbUnit.verb, verbUnit.unit, operation.value, operation.select);
+                if (verbUnit) {
+                    if (operation.target == languageEngine.enumerationTarget.emptyLine)
+                        for (let index = 0; index < operation.value; ++index)    
+                            await cursorMove(verbUnit.verb, verbUnit.unit, 1, operation.select);
+                    else
+                        await cursorMove(verbUnit.verb, verbUnit.unit, operation.value, operation.select);
+                } //if
                 else if (operation.target == languageEngine.enumerationTarget.word) {
                     switch (operation.move) {
                         case languageEngine.enumerationMoveLocation.start:
