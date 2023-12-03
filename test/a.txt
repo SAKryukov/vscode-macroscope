@@ -1,26 +1,2 @@
-
-<li><a href="">‘New Programming Technologies for Beam Diagnostics’, Proc. International Conf. EPAC'96, CERN, Vol. 3, p. 1781-1783 (1996)</a></li>
-Real-time problem and Object-Oriented Multitasking, Proc. PCaPAC'96 Workshop, DESY, Hamburg (1997)
-‘Shall we Replace LabVIEW with Object-Oriented Instrument?’, Proc. PCaPAC'96 Workshop, DESY, Hamburg (1997)
-‘On-Line and Off-Line Multi-Dimensional Data Presentation’, Proc. International Conf. CHEP'97, DESY, Berlin, p. 109-112 (1997)
-Diagnostic network for the Moscow Meson Factory linear accelerator, Technical report, version 2.0, INR RAS, Moscow 1998
-‘MOON Lab technology’, http://www.INR.Troitsk.Ru/~kryukov/moon.htm, May-June 1998
- P. N. Ostroumov, A.V. Feschenko, V.A. Gaidach, S.A. Krioukov, A. A. Menshov, A. Ueno, Bunch Length and Velocity Measurement of the JHP-RFQ Beam with INR BLVD, 1998
- S. A. Kryukov, ‘Unicode Controls: What Can VCL Do?’, The Delphi Magazine, 116 (April 2005), p. 33-43
-Wish You Were Here… Only Once, 24 Oct 2009
-Enumeration Types do not Enumerate! Working around .NET and Language Limitations, 22 Nov 2010
-Human-readable Enumeration Meta-data, 14 Dec 2010
-Hide Ad-hoc Methods Inside the Calling Method’s Body [Tip/Trick], 20 Dec 2010
-Hourglass Mouse Cursor Always Changes Back to its Original Image. How? [Tip/Trick], 20 Dec 2010
-Dynamic Method Dispatcher, 29 May 2011
-Enumeration-based Command Line Utility, Posted: 9 Jan 2011
-Simple Blocking Queue for Thread Communication and Inter-thread Invocation [Tip/Trick], 23 Jan 2011
-Using "using" Statements: DisposalAccumulator [Tip/Trick], 13 Sep 2012
-Power Over IP: Testing of the First Experimental Facility, 1 Apr 2014
-Practical Sound Recorder with Sound Activation, 3 Sep 2014
-Named Arguments for JavaScript Functions, Yet Another Approach, 2 Nov 2015
-Named Arguments for JavaScript Functions, Part Two: Going Structured, 5 Nov 2015
-Simple Rule-Driven Smart Formatting for HTML Textarea, 22 Nov 2015
-Modal Popup From Scratch, 2 Dec 2015
-Tetris on Canvas, 15 Feb 2015
-Some Programming Approaches to "Neuro-Linguistic Programming", 30 Mar 2015
+11 22 33
+11 22 33
