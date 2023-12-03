@@ -72,7 +72,9 @@
             const vscode = typeof acquireVsCodeApi == typeof undefined ?
                 null : acquireVsCodeApi();
             const moveAction = new Set(["move", "deselect"]);
-            const valueMove = new Set(["left", "right", "up", "down", "next", "previous"]);
+            const valueMove = new Set(
+                ["left", "right", "up", "down", "next", "previous",
+                "next-word", "previous-word", "next-empty-line", "previous-empty-line"]);
             const selectableActions = new Set(["move", "paste"]);
             const valueFilter = new Set("1234567890".split(""));
             const buttonBuild = document.querySelector("#build-macro");

@@ -57,7 +57,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         return null;
     }; //firstNonblank
 
-    const moveToAnotherWord = async (textEditor, backward) => {
+    const moveToAnotherWord = async (textEditor, backward, select) => {
         const selection = textEditor.selection
         const line = textEditor.document.lineAt(selection.start);
         const lineRange = line.range;
@@ -77,7 +77,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         const size = backward
             ? selectionAt - targetOffset
             : targetOffset - selectionAt;
-        await cursorMove(direction, "character", size, false);
+        await cursorMove(direction, "character", size, select);
     } //moveToAnotherWord
 
     const setCursorMagicWords = (verb, unit) => { return { verb: verb, unit: unit }; };
@@ -167,10 +167,10 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                             await moveToWord(textEditor, false);
                             break;
                         case languageEngine.enumerationMoveLocation.next:
-                            await moveToAnotherWord(textEditor, false);
+                            await moveToAnotherWord(textEditor, false, operation.select);
                             break;
                         case languageEngine.enumerationMoveLocation.previous:
-                            await moveToAnotherWord(textEditor, true);
+                            await moveToAnotherWord(textEditor, true, operation.select);
                             break;
                     } //swithch word moves not covered by cursorMove                  
                 } //if word moves not covered by cursorMove
