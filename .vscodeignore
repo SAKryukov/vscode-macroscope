@@ -1,0 +1,10 @@
+*.zip
+*.vsix
+.vscode
+.git
+test
+**/*.svg
+**/*.webp
+**/.gitignore
+**/*.txt
+**/test*

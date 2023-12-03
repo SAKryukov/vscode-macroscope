@@ -1,0 +1,19 @@
+{
+   "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug HTML",
+            "request": "launch",
+            "type": "chrome",
+            "file": "${workspaceFolder}/extension/operations.html"
+        },
+        {
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}"
+            ],
+            "name": "Launch Extension",
+            "request": "launch",
+            "type": "extensionHost"
+        },
+    ]
+}

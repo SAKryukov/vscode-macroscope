@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { font-family: sans-serif; margin: 0; padding: 0; box-sizing: content-box; }
+        html, body { height: 100%; }
+        body { padding: 0; }
+        body { display: flex; flex-direction: column; }
+        main { flex: auto; background-color: snow; overflow: auto; }
+        header { background-color: gainsboro; border-bottom: thin solid gray; }
+        header { display: flex; flex-direction: row; align-items: center; justify-content: space-around; flex-wrap: wrap; }
+        label { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; }
+        button, label { white-space: nowrap; }
+        footer { background-color:bisque; border-top: thin solid brown; }
+        main > summary { margin-top: 1em; color: red; }
+        main, footer, header, button { padding: 0.2em 1em 0.2em 1em; }
+        button { padding-top: 2px; padding-bottom: 0px; }
+        input[type=text] { width: 2em; }
+    </style>
+</head>
+
+<body>
+    <header>
+        <button id="build-macro">Build Macro Code</button>
+        <select id="action">
+            <option selected="true">move</option>
+            <option value="[]">text</option>
+            <option value="//">comment</option>
+            <option>copy</option>
+            <option value="copy-word">copy word</option>
+            <option value="copy-line">copy line</option>
+            <option value="copy-trimmed-line">copy trimmed line</option>
+            <option>paste</option>
+            <option>delete</option>
+            <option value="find-next">find next</option>
+            <option value="find-previous">find previous</option>
+            <option value="deselect-start">deselect start</option>
+            <option value="deselect-end">deselect end</option>
+        </select>
+        <select id="move">
+            <option>left</option>
+            <option selected="true">right</option>
+            <option>up</option>
+            <option>down</option>
+            <option value="word-start">start of word</option>
+            <option value="word-end">end of word</option>
+            <option value="start-line">start of line</option>
+            <option value="end-line">end of line</option>
+            <option value="start-trimmed-line">start of trimmed line</option>
+            <option value="end-trimmed-line">end of trimmed line</option>
+            <option value="next-word">next word</option>
+            <option value="previous-word">previous word</option>
+            <option value="next-empty-line">next empty line</option>
+            <option value="previous-empty-line">previous empty line</option>
+        </select>
+        <label><input id="select" type="checkbox"> Select</label>
+        <input id="value" type="text" value="1" />
+        <button id="add">Add</button>
+    </header>
+    <main>
+        <section contenteditable="true"></section>
+        <summary></summary>
+    </main>
+    <footer>
+        Macro Editor
+    </footer>
+    <script>
+        window.onload = () => {
+            const vscode = typeof acquireVsCodeApi == typeof undefined ?
+                null : acquireVsCodeApi();
+            const moveAction = new Set(["move", "deselect"]);
+            const valueMove = new Set(["left", "right", "up", "down", "next", "previous"]);
+            const selectableActions = new Set(["move", "paste"]);
+            const valueFilter = new Set("1234567890".split(""));
+            const buttonBuild = document.querySelector("#build-macro");
+            const selectAction = document.querySelector("#action");
+            const selectMove = document.querySelector("#move");
+            const editValue = document.querySelector("#value");
+            const buttonAdd = document.querySelector("#add");
+            const checkSelect = document.querySelector("#select");
+            const content = document.querySelector("body > main > section");
+            const errors = document.querySelector("body > main > summary");
+            editValue.onkeydown = event => {
+                if (!valueFilter.has(event.key) && event.key != "Backspace")
+                    event.preventDefault();
+            }; //editValue.onkeydown
+            const add = () => {
+                const item = document.createElement("p");
+                let line = `${selectAction.value}`;
+                const isMove = moveAction.has(selectAction.value);
+                if (isMove)
+                    line = `${line} ${selectMove.value}`;
+                let value = editValue.value;
+                if (!value)
+                    value = "1";
+                if (isMove && valueMove.has(selectMove.value) && selectAction.value != "deselect")
+                    line = `${line} ${value}`;
+                if (checkSelect.checked && selectableActions.has(selectAction.value))
+                    line = `${line} select`;
+                item.textContent = line;
+                content.appendChild(item);
+            }; //add
+            buttonAdd.onclick = add;
+            for (const control of [selectAction, selectMove])
+                control.onkeydown = event => {
+                    if (event.key == "Enter")
+                        add();
+                } //control.onkeydown
+            buttonBuild.onclick = () => {
+                let macro = "";
+                for (const element of content.childNodes)
+                    macro += element.textContent + "\n";
+                content.setAttribute("contenteditable", "false");
+                vscode?.postMessage({
+                    macro: {
+                        text: macro,
+                        innerHTML: content.innerHTML,
+                    },
+                })
+                setTimeout(() => content.setAttribute("contenteditable", "true"));
+            }; //buttonBuild.onclick
+            const preservePersistentMacro = event => {
+                vscode?.postMessage({
+                    macro: {
+                        innerHTML: content.innerHTML,
+                    },
+                });
+            } //preservePersistentMacro
+            content.onblur = preservePersistentMacro;
+            content.onfocus = preservePersistentMacro;
+            window.onmessage = event => {
+                while (errors.firstChild) 
+                    errors.removeChild(errors.lastChild);
+                let index = 1;
+                if (event.data.errors)
+                    for (let error of event.data.errors) {
+                        const p = document.createElement("p");
+                        p.textContent = `Unrecognized "${error.unrecognized}" in line ${error.count}: ${error.line}`;
+                        errors.appendChild(p);
+                        p.scrollIntoView({ block: "end" });
+                    } //loop
+                else if (event.data.innerHTML)
+                    content.innerHTML = event.data.innerHTML;
+            }; //window.onmessage
+
+        }; //window.onload
+    </script>
+</body>
+
+</html>

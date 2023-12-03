@@ -1,0 +1,57 @@
+{
+    "name": "macroscope",
+    "displayName": "Macroscope",
+    "description": "Editor Macro Engine",
+    "version": "0.0.2",
+    "publisher": "sakryukov",
+    "homepage": "http://www.SAKryukov.org",
+    "author": {
+        "name": "Sergey A Kryukov",
+        "url": "http://www.SAKryukov.org"
+    },
+    "license": "MIT",
+    "icon": "images/logo.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/SAKryukov/vscode-macroscope.git"
+    },
+    "engines": {
+        "vscode": ">=1.84.2"
+    },
+    "categories": [
+        "Other"
+    ],
+    "keywords": [
+        "case"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./extension/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "macroscope.macro.editor.start",
+                "title": "Macroscope: Macro Editor"
+            },
+            {
+                "command": "macroscope.macro.play",
+                "title": "Macroscope: Play Macro"
+            }
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "macroscope.macro.editor.start"
+                },
+                {
+                    "command": "macroscope.macro.play",
+                    "when": "macroscope.macro.play.visible"
+                }
+            ]
+        },
+        "__metadata": {
+            "publisherDisplayName": "Sergey A Kryukov"
+        }
+    }
+}
