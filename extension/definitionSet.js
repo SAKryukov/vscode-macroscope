@@ -13,7 +13,12 @@ exports.definitionSet = {
         macroPlay: "macroscope.macro.play",
         macroEditor: "macroscope.macro.editor.start",
         macroPlayVisibilityKey: "macroscope.macro.play.visible",
+    },
+    builtInCommands: {
         setContext: "setContext",
+        cursorMove: "cursorMove",
+        findNext: "editor.action.nextMatchFindAction",
+        findPrevious: "editor.action.previousMatchFindAction",
     },
     macroEditor: {
         name: "macro.editor",

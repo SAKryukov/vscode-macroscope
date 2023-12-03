@@ -22,7 +22,7 @@ exports.activate = context => {
 
     const updateMacroPlayVisibility = () => {
         vscode.commands.executeCommand(
-            definitionSet.commands.setContext,
+            definitionSet.builtInCommands.setContext,
             definitionSet.commands.macroPlayVisibilityKey,
             vscode.window.activeTextEditor != null && macro != null);
     }; //updateMacroPlayVisibility

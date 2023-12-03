@@ -12,10 +12,17 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
 
     const cursorMove = async (verb, unit, value, select) => {
         await vscode.commands.executeCommand(
-            "cursorMove",
+            definitionSet.builtInCommands.cursorMove,
             { to: verb, by: unit, value: value, select: select }
         );
     }; //cursorMove
+
+    const findNext = async backward => {
+        const command = backward
+            ? definitionSet.builtInCommands.findPrevious
+            : definitionSet.builtInCommands.findNext;
+        await vscode.commands.executeCommand(command);
+    }; //findNext
 
     const moveToWord = async (textEditor, start) => {
         const range = textEditor.document.getWordRangeAtPosition(textEditor.selection.start);
@@ -28,13 +35,6 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             await cursorMove(direction, "character", size, false);
         } //if
     } //moveToWord
-
-    const findNext = async backward => {
-        const command = backward
-            ? "editor.action.previousMatchFindAction"
-            : "editor.action.nextMatchFindAction"
-        await vscode.commands.executeCommand(command);
-    }; //findNext
 
     const firstNonblank = (line, backward) => {
         const marker = " ";
