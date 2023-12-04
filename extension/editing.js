@@ -115,11 +115,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         vscode.env.clipboard.writeText(textEditor.document.getText(range));
     }; //copyToClipboard
 
-    const deselect = async (textEditor, location) => {
-        if (textEditor.selection.isEmpty) return;
-        const verb = location == languageEngine.enumerationMoveLocation.start
-            ? "left" : "right";
-        await cursorMove(verb, "character", 1, false);
+    const deselect = (textEditor, location) => {
+        const selection = textEditor.selection;
+        if (selection.isEmpty) return;
+        const position = location == languageEngine.enumerationMoveLocation.start
+            ? selection.start : selection.end;
+        textEditor.selection = new vscode.Selection(position, position);
     }; //deselect
 
     const offset = (textEditor, value, select, backward) => {
@@ -229,7 +230,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     await findNext(backward);
                     break;
                 case languageEngine.enumerationOperation.deselect:
-                    await deselect(textEditor, operation.move);
+                    deselect(textEditor, operation.move);
                     break;
             } //switch non-move operation
         } //if
