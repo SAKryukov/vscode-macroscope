@@ -89,6 +89,16 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             moveSingleWord(textEditor, backward, select);
     } //moveToAnotherWord
 
+    const push = textEditor => {
+        stack.push(textEditor.selection.start);
+    }; //push
+    const pop = (textEditor, select) => {
+        const position = stack.pop();
+        if (!position) return;
+        const newStart = select ? textEditor.selection.start : position;
+        textEditor.selection = new vscode.Selection(newStart, position);
+    }; //pop
+
     const setCursorMagicWords = (verb, unit) => { return { verb: verb, unit: unit }; };
 
     const copyToClipboard = (textEditor, target) => {
@@ -236,6 +246,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                 case languageEngine.enumerationOperation.deselect:
                     deselect(textEditor, operation.move);
                     break;
+                case languageEngine.enumerationOperation.push:
+                    push(textEditor);
+                    break;
+                case languageEngine.enumerationOperation.pop:
+                    pop(textEditor, operation.select);
+                    break;                   
                 case languageEngine.enumerationOperation.return:
                     return indicatorReturn;
                 case languageEngine.enumerationOperation.pause:
@@ -246,7 +262,8 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
 
     this.play = async function(textEditor, macro) {
         if (!macro) return;
-        stack = [];
+        if (pause == null)
+            stack = [];
         const startIndex = pause == null ? 0 : pause + 1;
         if (!macro[startIndex]) {
             macro == null;
