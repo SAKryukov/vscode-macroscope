@@ -10,6 +10,9 @@ https://www.SAKryukov.org
 
 exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
 
+    const indicatorReturn = 1, indicatorPause = 2;
+    let stack = [], pause = null;
+
     const cursorMove = async (verb, unit, value, select) => {
         await vscode.commands.executeCommand(
             definitionSet.builtInCommands.cursorMove,
@@ -24,16 +27,17 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         await vscode.commands.executeCommand(command);
     }; //findNext
 
-    const moveToWord = async (textEditor, start) => {
+    const moveToWord = (textEditor, select, start) => {
         const range = textEditor.document.getWordRangeAtPosition(textEditor.selection.start);
-        const direction = start ? "left" : "right";
-        if (range) {
-            const offsetStart = textEditor.document.offsetAt(range.start);
-            const offsetEnd = textEditor.document.offsetAt(range.end);
-            const currentOffset = textEditor.document.offsetAt(textEditor.selection.start);
-            const size = start ? currentOffset - offsetStart : offsetEnd - currentOffset;
-            await cursorMove(direction, "character", size, false);
-        } //if
+        if (!range) return;
+        const finalPosition = start ? range.start : range.end;
+        if (select) {
+            if (start)
+                textEditor.selection = new vscode.Selection(finalPosition, textEditor.selection.start);
+            else
+                textEditor.selection = new vscode.Selection(textEditor.selection.start, finalPosition);
+        } else
+            textEditor.selection = new vscode.Selection(finalPosition, finalPosition);
     } //moveToWord
 
     const firstNonblank = (line, backward) => {
@@ -57,8 +61,8 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         return null;
     }; //firstNonblank
 
-    const moveToOneAnotherWord = async (textEditor, backward, select) => {
-        const selection = textEditor.selection
+    const moveSingleWord = (textEditor, backward, select) => {
+        const selection = textEditor.selection;
         const line = textEditor.document.lineAt(selection.start);
         const lineRange = line.range;
         const lineText = line.text;
@@ -70,19 +74,19 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         const relativeWordPosition = firstNonblank(subLine, backward);
         if (relativeWordPosition == null)
             return;
-        const targetOffset = backward
+        const finalOffset = backward
             ? lineStart + relativeWordPosition
             : selectionAt + relativeWordPosition;
-        const direction = backward ? "left" : "right";
-        const size = backward
-            ? selectionAt - targetOffset
-            : targetOffset - selectionAt;
-        await cursorMove(direction, "character", size, select);
-    } //moveToOneAnotherWord
+        const targetPosition = textEditor.document.positionAt(finalOffset);
+        if (select)
+            textEditor.selection = new vscode.Selection(selection.start, targetPosition);
+        else
+            textEditor.selection = new vscode.Selection(targetPosition, targetPosition);
+    } //moveSingleWord
 
-    const moveToAnotherWord = async (textEditor, backward, value, select) => {
+    const moveToAnotherWord = (textEditor, backward, value, select) => {
         for (let index = 0; index < value; ++index)
-            await moveToOneAnotherWord(textEditor, backward, select);
+            moveSingleWord(textEditor, backward, select);
     } //moveToAnotherWord
 
     const setCursorMagicWords = (verb, unit) => { return { verb: verb, unit: unit }; };
@@ -189,16 +193,16 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             else if (operation.target == languageEngine.enumerationTarget.word) {
                 switch (operation.move) {
                     case languageEngine.enumerationMoveLocation.start:
-                        await moveToWord(textEditor, true);
+                        moveToWord(textEditor, operation.select, true);
                         break;
                     case languageEngine.enumerationMoveLocation.end:
-                        await moveToWord(textEditor, false);
+                        moveToWord(textEditor, operation.select, false);
                         break;
                     case languageEngine.enumerationMoveLocation.next:
-                        await moveToAnotherWord(textEditor, false, operation.value, operation.select);
+                        moveToAnotherWord(textEditor, false, operation.value, operation.select);
                         break;
                     case languageEngine.enumerationMoveLocation.previous:
-                        await moveToAnotherWord(textEditor, true, operation.value, operation.select);
+                        moveToAnotherWord(textEditor, true, operation.value, operation.select);
                         break;
                 } //swithch word moves not covered by cursorMove                  
             } //if word moves not covered by cursorMove
@@ -232,14 +236,34 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                 case languageEngine.enumerationOperation.deselect:
                     deselect(textEditor, operation.move);
                     break;
-            } //switch non-move operation
+                case languageEngine.enumerationOperation.return:
+                    return indicatorReturn;
+                case languageEngine.enumerationOperation.pause:
+                    return indicatorPause;
+                } //switch non-move operation
         } //if
     }; //playOperation
 
     this.play = async function(textEditor, macro) {
         if (!macro) return;
-        for (const operation of macro)
-            await playOperation(textEditor, operation);
+        stack = [];
+        const startIndex = pause == null ? 0 : pause + 1;
+        if (!macro[startIndex]) {
+            macro == null;
+            return;
+        } //if
+        for (let index = startIndex; index < macro.length; ++index) {
+            const result = await playOperation(textEditor, macro[index]);
+            if (result) {
+                if (result == indicatorPause)
+                    pause = index;
+                break;
+            } //if
+            if (pause != null && index - 1 >= pause)
+                pause = null;
+        } //loop
     }; //this.play
+
+    this.resetPause = () => pause = null;
     
 };

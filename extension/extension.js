@@ -67,6 +67,7 @@ exports.activate = context => {
                 const errors = languageEngine.parse(message.macro.text);
                 macroEditor.webview.postMessage({ errors: errors });
                 if (errors == null) {
+                    textProcessor.resetPause();
                     macro = languageEngine.operations;
                     statusBarItem.text = definitionSet.statusBar.itemTextNew;
                 } //if

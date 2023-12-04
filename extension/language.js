@@ -21,7 +21,8 @@ exports.RuleEngine = function(definitionSet) {
     }; //utility
 
     this.enumerationOperation = {
-        move: 0, text: 0, copy: 0, paste: 0, delete: 0, find: 0, deselect: 0,
+        move: 0, text: 0, copy: 0, paste: 0, delete: 0, find: 0,
+        deselect: 0, push: 0, pop: 0, pause: 0, return: 0,
     }; //enumerationOperation
     this.enumerationTarget = {
         character: 0, line: 0, trimmedLine: 0, emptyLine: 0, word: 0, 
@@ -76,6 +77,10 @@ exports.RuleEngine = function(definitionSet) {
             macroOperation.operation = this.enumerationOperation.deselect;
             macroOperation.move = this.enumerationMoveLocation.end;
         });
+        map.set("push", macroOperation => macroOperation.operation = this.enumerationOperation.push);
+        map.set("pop", macroOperation => macroOperation.operation = this.enumerationOperation.pop);
+        map.set("pause", macroOperation => macroOperation.operation = this.enumerationOperation.pause);
+        map.set("return", macroOperation => macroOperation.operation = this.enumerationOperation.return);
         return map;
     })(); //operationMap
 
