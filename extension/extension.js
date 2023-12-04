@@ -18,13 +18,27 @@ const textProcessor = new editing.TextProcessor(vscode, definitionSet, languageE
 
 exports.activate = context => {
 
-    let macroEditor, macro;
+    let macroEditor, macro, statusBarItem;
 
     const updateMacroPlayVisibility = () => {
+        const isVisible = vscode.window.activeTextEditor != null && macro != null;
+        if (!statusBarItem) {
+            statusBarItem = vscode.window.createStatusBarItem(
+            "macroscope.statusBarItem", // unused
+            vscode.StatusBarAlignment.Left); // SA!!! I don't like vscode.StatusBarAlignment.Right,
+                                             // because it requires pretty stupid "priority" argument
+                statusBarItem.text = definitionSet.statusBar.itemText;
+                statusBarItem.tooltip = definitionSet.statusBar.itemToolTip;
+                statusBarItem.command = definitionSet.commands.macroPlay;                                         
+        } //if
+        if (isVisible)
+            statusBarItem.show();
+        else
+            statusBarItem.hide();
         vscode.commands.executeCommand(
             definitionSet.builtInCommands.setContext,
             definitionSet.commands.macroPlayVisibilityKey,
-            vscode.window.activeTextEditor != null && macro != null);
+            isVisible);
     }; //updateMacroPlayVisibility
 
     context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => 
@@ -32,7 +46,10 @@ exports.activate = context => {
 
     context.subscriptions.push(vscode.commands.registerTextEditorCommand(
         definitionSet.commands.macroPlay,
-        textEditor => textProcessor.play(textEditor, macro)));
+        textEditor => {
+            textProcessor.play(textEditor, macro);
+            statusBarItem.text = definitionSet.statusBar.itemText;
+        })); //macro Play command
         
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
             if (macroEditor != null) return; //SA??? make state
@@ -49,8 +66,10 @@ exports.activate = context => {
                 context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.innerHTML);
                 const errors = languageEngine.parse(message.macro.text);
                 macroEditor.webview.postMessage({ errors: errors });
-                if (errors == null)
+                if (errors == null) {
                     macro = languageEngine.operations;
+                    statusBarItem.text = definitionSet.statusBar.itemTextNew;
+                } //if
                 updateMacroPlayVisibility();
             }, undefined, context.subscriptions);
             const persistentMacro = context.workspaceState.get(definitionSet.scriptPersistentStateKey);

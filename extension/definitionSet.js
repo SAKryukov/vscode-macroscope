@@ -20,6 +20,12 @@ exports.definitionSet = {
         findNext: "editor.action.nextMatchFindAction",
         findPrevious: "editor.action.previousMatchFindAction",
     },
+    statusBar: {
+        itemText: "Play macro",
+        itemTextNew: "Play new macro",
+        // keep in sync with package:
+        itemToolTip: "Use commands: Macroscope: Macro Editor, Macroscope: Play Macro"
+    },
     macroEditor: {
         name: "macro.editor",
         title: "Macroscope Macro Editor",
