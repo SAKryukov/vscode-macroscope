@@ -27,7 +27,7 @@ exports.RuleEngine = function(definitionSet) {
         character: 0, line: 0, trimmedLine: 0, emptyLine: 0, word: 0, 
     };
     this.enumerationMoveLocation = {
-        increment: 0, decrement: 0, start: 0, end: 0, next: 0, previous: 0,
+        increment: 0, decrement: 0, start: 0, end: 0, next: 0, previous: 0, forward: 0, backward: 0,
     };
     utility.preprocessEnumeration(this.enumerationOperation);
     utility.preprocessEnumeration(this.enumerationTarget);
@@ -96,6 +96,14 @@ exports.RuleEngine = function(definitionSet) {
         map.set("down", macroOperation => {
             macroOperation.target = this.enumerationTarget.line;
             macroOperation.move = this.enumerationMoveLocation.increment;
+        });
+        map.set("forward", macroOperation => {
+            macroOperation.target = this.enumerationTarget.character;
+            macroOperation.move = this.enumerationMoveLocation.forward;
+        });
+        map.set("backward", macroOperation => {
+            macroOperation.target = this.enumerationTarget.character;
+            macroOperation.move = this.enumerationMoveLocation.backward;
         });
         map.set("word-start", macroOperation => {
             macroOperation.target = this.enumerationTarget.word;

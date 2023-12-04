@@ -33,7 +33,7 @@ exports.definitionSet = {
     },
     value: {
         default: 1,
-        maximumSize: 3, //SA???
+        maximumSize: 12, //SA???
     },
     parsing: {
         empty: "",

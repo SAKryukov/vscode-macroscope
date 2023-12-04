@@ -45,6 +45,8 @@
             <option selected="true">right</option>
             <option>up</option>
             <option>down</option>
+            <option>forward</option>
+            <option>backward</option>
             <option value="word-start">start of word</option>
             <option value="word-end">end of word</option>
             <option value="start-line">start of line</option>
@@ -73,7 +75,7 @@
                 null : acquireVsCodeApi();
             const moveAction = new Set(["move", "deselect"]);
             const valueMove = new Set(
-                ["left", "right", "up", "down", "next", "previous",
+                ["left", "right", "up", "down", "next", "previous", "forward", "backward",
                 "next-word", "previous-word", "next-empty-line", "previous-empty-line"]);
             const selectableActions = new Set(["move", "paste"]);
             const valueFilter = new Set("1234567890".split(""));

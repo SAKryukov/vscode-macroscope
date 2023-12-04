@@ -122,6 +122,19 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         await cursorMove(verb, "character", 1, false);
     }; //deselect
 
+    const offset = (textEditor, value, select, backward) => {
+        const selection = textEditor.selection;
+        const startOffset = textEditor.document.offsetAt(selection.start);
+        if (backward) value = -value;
+        let endOffset = startOffset + value;
+        if (endOffset < 0) endOffset = 0;
+        const finalPosition = textEditor.document.positionAt(endOffset);
+        if (select)
+            textEditor.selection = new vscode.Selection(selection.start, finalPosition);
+        else
+            textEditor.selection = new vscode.Selection(finalPosition, finalPosition);
+    }; //offset
+
     const playOperation = async (textEditor, operation) => {
         let verbUnit = null;
         if (operation.operation == languageEngine.enumerationOperation.move) {
@@ -158,7 +171,13 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     if (operation.target == languageEngine.enumerationTarget.emptyLine)
                         verbUnit = setCursorMagicWords("prevBlankLine", "line");
                     break;
-            } //switch
+                case languageEngine.enumerationMoveLocation.forward:
+                    offset(textEditor, operation.value, operation.select, false);
+                    break;
+                case languageEngine.enumerationMoveLocation.backward:
+                    offset(textEditor, operation.value, operation.select, true);
+                    break;
+                } //switch
             if (verbUnit) {
                 if (operation.target == languageEngine.enumerationTarget.emptyLine)
                     for (let index = 0; index < operation.value; ++index)
