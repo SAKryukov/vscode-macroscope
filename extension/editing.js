@@ -188,9 +188,9 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                 switch (operation.operation) { //non move:
                     case languageEngine.enumerationOperation.text:
                         if (textEditor.selection.isEmpty)
-                            await textEditor.edit(builder => builder.insert(textEditor.selection.start, operation.value));
+                            await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, operation.value));
                         else
-                            await textEditor.edit(builder => builder.replace(textEditor.selection, operation.value));
+                            await textEditor.edit(async builder => await builder.replace(textEditor.selection, operation.value));
                         break;
                     case languageEngine.enumerationOperation.copy:
                         copyToClipboard(textEditor, textEditor.selection, operation.target);
@@ -199,13 +199,13 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                         const text = vscode.env.clipboard.readText();
                         if (!text) return;
                         if (textEditor.selection.isEmpty)
-                            await textEditor.edit(builder => builder.insert(textEditor.selection.start, text));
+                            await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, text));
                         else
-                            await textEditor.edit(builder => builder.replace(textEditor.selection, text));
+                            await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
                         break;
                     case languageEngine.enumerationOperation.delete:
                         if (!textEditor.selection.isEmpty)
-                            await textEditor.edit(builder => builder.replace(textEditor.selection, definitionSet.parsing.empty));
+                            await textEditor.edit(async builder => await builder.replace(textEditor.selection, definitionSet.parsing.empty));
                         case languageEngine.enumerationOperation.find:
                             const backward =
                                 operation.move == languageEngine.enumerationMoveLocation.previous;
