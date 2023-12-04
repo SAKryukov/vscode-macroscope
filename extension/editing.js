@@ -279,6 +279,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             if (pause != null && index - 1 >= pause)
                 pause = null;
         } //loop
+        return pause != null;
     }; //this.play
 
     this.resetPause = () => pause = null;

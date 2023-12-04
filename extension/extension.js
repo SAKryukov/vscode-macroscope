@@ -18,6 +18,13 @@ const textProcessor = new editing.TextProcessor(vscode, definitionSet, languageE
 
 exports.activate = context => {
 
+    const metadata = {
+        version: context.extension.packageJSON.version,
+        author: context.extension.packageJSON.author.name,
+        authorUrl: context.extension.packageJSON.author.url,
+        extensionDisplayName: context.extension.packageJSON.displayName,
+    }; //metadata
+
     let macroEditor, macro, statusBarItem;
 
     const updateMacroPlayVisibility = () => {
@@ -47,8 +54,11 @@ exports.activate = context => {
     context.subscriptions.push(vscode.commands.registerTextEditorCommand(
         definitionSet.commands.macroPlay,
         textEditor => {
-            textProcessor.play(textEditor, macro);
-            statusBarItem.text = definitionSet.statusBar.itemText;
+            textProcessor.play(textEditor, macro).then(isPaused =>
+                statusBarItem.text = isPaused
+                ? definitionSet.statusBar.itemTextContinue
+                : definitionSet.statusBar.itemText
+            );
         })); //macro Play command
         
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
@@ -61,7 +71,9 @@ exports.activate = context => {
             ); //panel
             macroEditor.onDidDispose(() => macroEditor = null);
             macroEditor.webview.html = fileSystem.readFileSync(
-                definitionSet.macroEditor.htmlFileName()).toString();
+                definitionSet.macroEditor.htmlFileName()).toString()
+                    .replace("?product?", metadata.extensionDisplayName)
+                    .replace("?version?", metadata.version);
             macroEditor.webview.onDidReceiveMessage(message => {
                 context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.innerHTML);
                 const errors = languageEngine.parse(message.macro.text);
