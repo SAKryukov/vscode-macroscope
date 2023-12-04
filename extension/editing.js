@@ -122,101 +122,104 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         await cursorMove(verb, "character", 1, false);
     }; //deselect
 
-    this.play = async function(textEditor, macro) {
-        if (!macro) return;
+    const playOperation = async (textEditor, operation) => {
         let verbUnit = null;
-        for (const operation of macro) {
-            if (operation.operation == languageEngine.enumerationOperation.move) {
+        if (operation.operation == languageEngine.enumerationOperation.move) {
+            switch (operation.move) {
+                case languageEngine.enumerationMoveLocation.increment:
+                    if (operation.target == languageEngine.enumerationTarget.character)
+                        verbUnit = setCursorMagicWords("right", "character");
+                    else if (operation.target == languageEngine.enumerationTarget.line)
+                        verbUnit = setCursorMagicWords("down", "character");
+                    break;
+                case languageEngine.enumerationMoveLocation.decrement:
+                    if (operation.target == languageEngine.enumerationTarget.character)
+                        verbUnit = setCursorMagicWords("left", "line");
+                    else if (operation.target == languageEngine.enumerationTarget.line)
+                        verbUnit = setCursorMagicWords("up", "line");
+                    break;
+                case languageEngine.enumerationMoveLocation.start:
+                    if (operation.target == languageEngine.enumerationTarget.line)
+                        verbUnit = setCursorMagicWords("wrappedLineStart", "line");
+                    else if (operation.target == languageEngine.enumerationTarget.trimmedLine)
+                        verbUnit = setCursorMagicWords("wrappedLineFirstNonWhitespaceCharacter", "line");
+                    break;
+                case languageEngine.enumerationMoveLocation.end:
+                    if (operation.target == languageEngine.enumerationTarget.line)
+                        verbUnit = setCursorMagicWords("wrappedLineEnd", "line");
+                    else if (operation.target == languageEngine.enumerationTarget.trimmedLine)
+                        verbUnit = setCursorMagicWords("wrappedLineLastNonWhitespaceCharacter", "line");
+                    break;
+                case languageEngine.enumerationMoveLocation.next:
+                    if (operation.target == languageEngine.enumerationTarget.emptyLine)
+                        verbUnit = setCursorMagicWords("nextBlankLine", "line");
+                    break;
+                case languageEngine.enumerationMoveLocation.previous:
+                    if (operation.target == languageEngine.enumerationTarget.emptyLine)
+                        verbUnit = setCursorMagicWords("prevBlankLine", "line");
+                    break;
+            } //switch
+            if (verbUnit) {
+                if (operation.target == languageEngine.enumerationTarget.emptyLine)
+                    for (let index = 0; index < operation.value; ++index)
+                        await cursorMove(verbUnit.verb, verbUnit.unit, 1, operation.select);
+                else
+                    await cursorMove(verbUnit.verb, verbUnit.unit, operation.value, operation.select);
+            } //if
+            else if (operation.target == languageEngine.enumerationTarget.word) {
                 switch (operation.move) {
-                    case languageEngine.enumerationMoveLocation.increment:
-                        if (operation.target == languageEngine.enumerationTarget.character)
-                            verbUnit = setCursorMagicWords("right", "character");
-                        else if (operation.target == languageEngine.enumerationTarget.line)
-                            verbUnit = setCursorMagicWords("down", "character");
-                        break;
-                    case languageEngine.enumerationMoveLocation.decrement:
-                        if (operation.target == languageEngine.enumerationTarget.character)
-                            verbUnit = setCursorMagicWords("left", "line");
-                        else if (operation.target == languageEngine.enumerationTarget.line)
-                            verbUnit = setCursorMagicWords("up", "line");
-                        break;
                     case languageEngine.enumerationMoveLocation.start:
-                        if (operation.target == languageEngine.enumerationTarget.line)
-                            verbUnit = setCursorMagicWords("wrappedLineStart", "line");
-                        else if (operation.target == languageEngine.enumerationTarget.trimmedLine)
-                            verbUnit = setCursorMagicWords("wrappedLineFirstNonWhitespaceCharacter", "line");
+                        await moveToWord(textEditor, true);
                         break;
                     case languageEngine.enumerationMoveLocation.end:
-                        if (operation.target == languageEngine.enumerationTarget.line)
-                            verbUnit = setCursorMagicWords("wrappedLineEnd", "line");
-                        else if (operation.target == languageEngine.enumerationTarget.trimmedLine)
-                            verbUnit = setCursorMagicWords("wrappedLineLastNonWhitespaceCharacter", "line");
+                        await moveToWord(textEditor, false);
                         break;
                     case languageEngine.enumerationMoveLocation.next:
-                        if (operation.target == languageEngine.enumerationTarget.emptyLine)
-                            verbUnit = setCursorMagicWords("nextBlankLine", "line");
+                        await moveToAnotherWord(textEditor, false, operation.value, operation.select);
                         break;
                     case languageEngine.enumerationMoveLocation.previous:
-                        if (operation.target == languageEngine.enumerationTarget.emptyLine)
-                            verbUnit = setCursorMagicWords("prevBlankLine", "line");
+                        await moveToAnotherWord(textEditor, true, operation.value, operation.select);
                         break;
-                } //switch
-                if (verbUnit) {
-                    if (operation.target == languageEngine.enumerationTarget.emptyLine)
-                        for (let index = 0; index < operation.value; ++index)    
-                            await cursorMove(verbUnit.verb, verbUnit.unit, 1, operation.select);
+                } //swithch word moves not covered by cursorMove                  
+            } //if word moves not covered by cursorMove
+        } else {
+            switch (operation.operation) { //non move:
+                case languageEngine.enumerationOperation.text:
+                    if (textEditor.selection.isEmpty)
+                        await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, operation.value));
                     else
-                        await cursorMove(verbUnit.verb, verbUnit.unit, operation.value, operation.select);
-                } //if
-                else if (operation.target == languageEngine.enumerationTarget.word) {
-                    switch (operation.move) {
-                        case languageEngine.enumerationMoveLocation.start:
-                            await moveToWord(textEditor, true);
-                            break;
-                        case languageEngine.enumerationMoveLocation.end:
-                            await moveToWord(textEditor, false);
-                            break;
-                        case languageEngine.enumerationMoveLocation.next:
-                            await moveToAnotherWord(textEditor, false, operation.value, operation.select);
-                            break;
-                        case languageEngine.enumerationMoveLocation.previous:
-                            await moveToAnotherWord(textEditor, true, operation.value, operation.select);
-                            break;
-                    } //swithch word moves not covered by cursorMove                  
-                } //if word moves not covered by cursorMove
-            } else {
-                switch (operation.operation) { //non move:
-                    case languageEngine.enumerationOperation.text:
-                        if (textEditor.selection.isEmpty)
-                            await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, operation.value));
-                        else
-                            await textEditor.edit(async builder => await builder.replace(textEditor.selection, operation.value));
-                        break;
-                    case languageEngine.enumerationOperation.copy:
-                        copyToClipboard(textEditor, textEditor.selection, operation.target);
-                        break;
-                    case languageEngine.enumerationOperation.paste:
-                        const text = vscode.env.clipboard.readText();
-                        if (!text) return;
-                        if (textEditor.selection.isEmpty)
-                            await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, text));
-                        else
-                            await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
-                        break;
-                    case languageEngine.enumerationOperation.delete:
-                        if (!textEditor.selection.isEmpty)
-                            await textEditor.edit(async builder => await builder.replace(textEditor.selection, definitionSet.parsing.empty));
-                        case languageEngine.enumerationOperation.find:
-                            const backward =
-                                operation.move == languageEngine.enumerationMoveLocation.previous;
-                            await findNext(backward);
-                            break;
-                        case languageEngine.enumerationOperation.deselect:
-                        await deselect(textEditor, operation.move);
-                        break;
-                } //switch non-move operation
-            } //if
-        } //loop
+                        await textEditor.edit(async builder => await builder.replace(textEditor.selection, operation.value));
+                    break;
+                case languageEngine.enumerationOperation.copy:
+                    copyToClipboard(textEditor, textEditor.selection, operation.target);
+                    break;
+                case languageEngine.enumerationOperation.paste:
+                    const text = vscode.env.clipboard.readText();
+                    if (!text) return;
+                    if (textEditor.selection.isEmpty)
+                        await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, text));
+                    else
+                        await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
+                    break;
+                case languageEngine.enumerationOperation.delete:
+                    if (!textEditor.selection.isEmpty)
+                        await textEditor.edit(async builder => await builder.replace(textEditor.selection, definitionSet.parsing.empty));
+                case languageEngine.enumerationOperation.find:
+                    const backward =
+                        operation.move == languageEngine.enumerationMoveLocation.previous;
+                    await findNext(backward);
+                    break;
+                case languageEngine.enumerationOperation.deselect:
+                    await deselect(textEditor, operation.move);
+                    break;
+            } //switch non-move operation
+        } //if
+    }; //playOperation
+
+    this.play = async function(textEditor, macro) {
+        if (!macro) return;
+        for (const operation of macro)
+            await playOperation(textEditor, operation);
     }; //this.play
     
 };
