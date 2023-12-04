@@ -22,17 +22,18 @@ exports.RuleEngine = function(definitionSet) {
 
     this.enumerationOperation = {
         move: 0, text: 0, copy: 0, paste: 0, delete: 0, find: 0,
-        deselect: 0, push: 0, pop: 0, pause: 0, return: 0,
+        deselect: 0, pushPosition: 0, popPosition: 0, pause: 0, return: 0,
+        pushText: 0, popText: 0,
     }; //enumerationOperation
     this.enumerationTarget = {
-        character: 0, line: 0, trimmedLine: 0, emptyLine: 0, word: 0, 
+        character: 0, line: 0, trimmedLine: 0, emptyLine: 0, word: 0, selection: 0, 
     };
-    this.enumerationMoveLocation = {
+    this.enumerationMove = {
         increment: 0, decrement: 0, start: 0, end: 0, next: 0, previous: 0, forward: 0, backward: 0,
     };
     utility.preprocessEnumeration(this.enumerationOperation);
     utility.preprocessEnumeration(this.enumerationTarget);
-    utility.preprocessEnumeration(this.enumerationMoveLocation);
+    utility.preprocessEnumeration(this.enumerationMove);
 
     const MacroOperation = function(operation, target, move, value, select, index) {
         this.operation = operation; //this.enumerationOperation
@@ -63,24 +64,41 @@ exports.RuleEngine = function(definitionSet) {
         map.set("delete", macroOperation => macroOperation.operation = this.enumerationOperation.delete);
         map.set("find-next", macroOperation => {
             macroOperation.operation = this.enumerationOperation.find;
-            macroOperation.move = this.enumerationMoveLocation.next;
+            macroOperation.move = this.enumerationMove.next;
         });
         map.set("find-previous", macroOperation => {
             macroOperation.operation = this.enumerationOperation.find;
-            macroOperation.move = this.enumerationMoveLocation.previous;
+            macroOperation.move = this.enumerationMove.previous;
         });
         map.set("deselect-start", macroOperation => {
             macroOperation.operation = this.enumerationOperation.deselect;
-            macroOperation.move = this.enumerationMoveLocation.start;
+            macroOperation.move = this.enumerationMove.start;
         });
         map.set("deselect-end", macroOperation => {
             macroOperation.operation = this.enumerationOperation.deselect;
-            macroOperation.move = this.enumerationMoveLocation.end;
+            macroOperation.move = this.enumerationMove.end;
         });
-        map.set("push", macroOperation => macroOperation.operation = this.enumerationOperation.push);
-        map.set("pop", macroOperation => macroOperation.operation = this.enumerationOperation.pop);
+        map.set("push-position", macroOperation => macroOperation.operation = this.enumerationOperation.pushPosition);
+        map.set("pop-position", macroOperation => macroOperation.operation = this.enumerationOperation.popPosition);
         map.set("pause", macroOperation => macroOperation.operation = this.enumerationOperation.pause);
         map.set("return", macroOperation => macroOperation.operation = this.enumerationOperation.return);
+        map.set("push-selection", macroOperation => {
+            macroOperation.operation = this.enumerationOperation.pushText;
+            macroOperation.target = this.enumerationTarget.selection;
+        });
+        map.set("push-word", macroOperation => {
+            macroOperation.operation = this.enumerationOperation.pushText;
+            macroOperation.target = this.enumerationTarget.word;
+        });
+        map.set("push-line", macroOperation => {
+            macroOperation.operation = this.enumerationOperation.pushText;
+            macroOperation.target = this.enumerationTarget.line;
+        });
+        map.set("push-trimmed-line", macroOperation => {
+            macroOperation.operation = this.enumerationOperation.pushText;
+            macroOperation.target = this.enumerationTarget.trimmedLine;
+        });
+        map.set("pop-text", macroOperation => macroOperation.operation = this.enumerationOperation.popText);      
         return map;
     })(); //operationMap
 
@@ -88,71 +106,71 @@ exports.RuleEngine = function(definitionSet) {
         const map = new Map();
         map.set("left", macroOperation => {
             macroOperation.target = this.enumerationTarget.character;
-            macroOperation.move = this.enumerationMoveLocation.decrement;
+            macroOperation.move = this.enumerationMove.decrement;
         });
         map.set("right", macroOperation => {
             macroOperation.target = this.enumerationTarget.character;
-            macroOperation.move = this.enumerationMoveLocation.increment;
+            macroOperation.move = this.enumerationMove.increment;
         });
         map.set("up", macroOperation => {
             macroOperation.target = this.enumerationTarget.line;
-            macroOperation.move = this.enumerationMoveLocation.decrement;
+            macroOperation.move = this.enumerationMove.decrement;
         });
         map.set("down", macroOperation => {
             macroOperation.target = this.enumerationTarget.line;
-            macroOperation.move = this.enumerationMoveLocation.increment;
+            macroOperation.move = this.enumerationMove.increment;
         });
         map.set("forward", macroOperation => {
             macroOperation.target = this.enumerationTarget.character;
-            macroOperation.move = this.enumerationMoveLocation.forward;
+            macroOperation.move = this.enumerationMove.forward;
         });
         map.set("backward", macroOperation => {
             macroOperation.target = this.enumerationTarget.character;
-            macroOperation.move = this.enumerationMoveLocation.backward;
+            macroOperation.move = this.enumerationMove.backward;
         });
         map.set("word-start", macroOperation => {
             macroOperation.target = this.enumerationTarget.word;
-            macroOperation.move = this.enumerationMoveLocation.start;
+            macroOperation.move = this.enumerationMove.start;
         });
         map.set("word-end", macroOperation => {
             macroOperation.target = this.enumerationTarget.word;
-            macroOperation.move = this.enumerationMoveLocation.end;
+            macroOperation.move = this.enumerationMove.end;
         });
         map.set("start-line", macroOperation => {
             macroOperation.target = this.enumerationTarget.line;
-            macroOperation.move = this.enumerationMoveLocation.start;
+            macroOperation.move = this.enumerationMove.start;
         });
         map.set("end-line", macroOperation => {
             macroOperation.target = this.enumerationTarget.line;
-            macroOperation.move = this.enumerationMoveLocation.end;
+            macroOperation.move = this.enumerationMove.end;
         });
         map.set("start-trimmed-line", macroOperation => {
             macroOperation.target = this.enumerationTarget.trimmedLine;
-            macroOperation.move = this.enumerationMoveLocation.start;
+            macroOperation.move = this.enumerationMove.start;
         });
         map.set("end-trimmed-line", macroOperation => {
             macroOperation.target = this.enumerationTarget.trimmedLine;
-            macroOperation.move = this.enumerationMoveLocation.end;
+            macroOperation.move = this.enumerationMove.end;
         });
         map.set("next-word", macroOperation => {
             macroOperation.target = this.enumerationTarget.word;
-            macroOperation.move = this.enumerationMoveLocation.next;
+            macroOperation.move = this.enumerationMove.next;
         });
         map.set("previous-word", macroOperation => {
             macroOperation.target = this.enumerationTarget.word;
-            macroOperation.move = this.enumerationMoveLocation.previous;
+            macroOperation.move = this.enumerationMove.previous;
         });
         map.set("next-word", macroOperation => {
             macroOperation.target = this.enumerationTarget.word;
-            macroOperation.move = this.enumerationMoveLocation.next;
+            macroOperation.move = this.enumerationMove.next;
         });
         map.set("next-empty-line", macroOperation => {
             macroOperation.target = this.enumerationTarget.emptyLine;
-            macroOperation.move = this.enumerationMoveLocation.next;
+            macroOperation.move = this.enumerationMove.next;
         });
         map.set("previous-empty-line", macroOperation => {
             macroOperation.target = this.enumerationTarget.emptyLine;
-            macroOperation.move = this.enumerationMoveLocation.previous;
+            macroOperation.move = this.enumerationMove.previous;
         });
         return map;
     })(); //moveMap

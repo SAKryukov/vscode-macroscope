@@ -39,8 +39,13 @@
             <option value="find-previous">find previous</option>
             <option value="deselect-start">deselect start</option>
             <option value="deselect-end">deselect end</option>
-            <option value="push">push position</option>
-            <option value="pop">pop position</option>
+            <option value="push-position">push position</option>
+            <option value="pop-position">pop position</option>
+            <option value="push-selection">push selection text</option>
+            <option value="push-word">push word text</option>
+            <option value="push-line">push line text</option>
+            <option value="push-trimmed-line">push trimmed line text</option>
+            <option value="pop-text">pop text</option>
             <option>pause</option>
             <option>return</option>
         </select>
@@ -62,8 +67,8 @@
             <option value="next-empty-line">next empty line</option>
             <option value="previous-empty-line">previous empty line</option>
         </select>
-        <label><input id="select" type="checkbox"> Select</label>
         <input id="value" type="text" value="1" />
+        <label><input id="select" type="checkbox"> Select</label>
         <button id="add">Add</button>
     </header>
     <main>

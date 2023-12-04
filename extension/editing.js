@@ -11,7 +11,7 @@ https://www.SAKryukov.org
 exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
 
     const indicatorReturn = 1, indicatorPause = 2;
-    let stack = [], pause = null;
+    let positionStack = [], textStack = [], pause = null;
 
     const cursorMove = async (verb, unit, value, select) => {
         await vscode.commands.executeCommand(
@@ -90,10 +90,10 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
     } //moveToAnotherWord
 
     const push = textEditor => {
-        stack.push(textEditor.selection.start);
+        positionStack.push(textEditor.selection.start);
     }; //push
     const pop = (textEditor, select) => {
-        const position = stack.pop();
+        const position = positionStack.pop();
         if (!position) return;
         const newStart = select ? textEditor.selection.start : position;
         textEditor.selection = new vscode.Selection(newStart, position);
@@ -132,7 +132,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
     const deselect = (textEditor, location) => {
         const selection = textEditor.selection;
         if (selection.isEmpty) return;
-        const position = location == languageEngine.enumerationMoveLocation.start
+        const position = location == languageEngine.enumerationMove.start
             ? selection.start : selection.end;
         textEditor.selection = new vscode.Selection(position, position);
     }; //deselect
@@ -150,46 +150,86 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             textEditor.selection = new vscode.Selection(finalPosition, finalPosition);
     }; //offset
 
+    const getSelectionRange = textEditor =>
+        new vscode.Selection(textEditor.selection.start, textEditor.selection.end);
+    const getWordRange = textEditor =>
+        textEditor.document.getWordRangeAtPosition(textEditor.selection.start);
+    const getLineRange = textEditor =>
+        textEditor.document.lineAt(textEditor.selection.start).range;
+    const getTrimmedLineRange = textEditor => {
+        const range = textEditor.document.lineAt(textEditor.selection.start).range;
+        const text = textEditor.document.getText(range);
+        const fullLength = text.length;
+        const offsetLeft = fullLength - text.trimLeft().length;
+        const offsetRight = fullLength - text.trimRight().length;
+        const offsetStart = textEditor.document.offsetAt(range.start) + offsetLeft;
+        const offsetEnd = textEditor.document.offsetAt(range.end)- offsetRight;
+        const positionStart = textEditor.document.positionAt(offsetStart);
+        const positionEnd = textEditor.document.positionAt(offsetEnd);
+        return new vscode.Range(positionStart, positionEnd);
+    }; //getTrimmedLineRange
+
+    const pushText = (textEditor, range) => {
+        if (!range) return;
+        textStack.push(textEditor.document.getText(range));
+    }; //pushText
+
+    const popText = async (textEditor, select) => {
+        const text = textStack.pop();
+        if (!text) return;
+        const startSelection = textEditor.selection.start;
+        if (textEditor.selection.isEmpty)
+            await textEditor.edit(async builder => await builder.insert(startSelection, text));
+        else
+            await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
+        if (select) {
+            const startOffest = textEditor.document.offsetAt(startSelection);
+            const endOffset = startOffest + text.length;
+            const endSelecton = textEditor.document.positionAt(endOffset);
+            textEditor.selection = new vscode.Selection(startSelection, endSelecton);
+        } //if
+    }; //popText
+
     const playOperation = async (textEditor, operation) => {
-        let verbUnit = null;
         if (operation.operation == languageEngine.enumerationOperation.move) {
+            let verbUnit = null;
             switch (operation.move) {
-                case languageEngine.enumerationMoveLocation.increment:
+                case languageEngine.enumerationMove.increment:
                     if (operation.target == languageEngine.enumerationTarget.character)
                         verbUnit = setCursorMagicWords("right", "character");
                     else if (operation.target == languageEngine.enumerationTarget.line)
                         verbUnit = setCursorMagicWords("down", "character");
                     break;
-                case languageEngine.enumerationMoveLocation.decrement:
+                case languageEngine.enumerationMove.decrement:
                     if (operation.target == languageEngine.enumerationTarget.character)
                         verbUnit = setCursorMagicWords("left", "line");
                     else if (operation.target == languageEngine.enumerationTarget.line)
                         verbUnit = setCursorMagicWords("up", "line");
                     break;
-                case languageEngine.enumerationMoveLocation.start:
+                case languageEngine.enumerationMove.start:
                     if (operation.target == languageEngine.enumerationTarget.line)
                         verbUnit = setCursorMagicWords("wrappedLineStart", "line");
                     else if (operation.target == languageEngine.enumerationTarget.trimmedLine)
                         verbUnit = setCursorMagicWords("wrappedLineFirstNonWhitespaceCharacter", "line");
                     break;
-                case languageEngine.enumerationMoveLocation.end:
+                case languageEngine.enumerationMove.end:
                     if (operation.target == languageEngine.enumerationTarget.line)
                         verbUnit = setCursorMagicWords("wrappedLineEnd", "line");
                     else if (operation.target == languageEngine.enumerationTarget.trimmedLine)
                         verbUnit = setCursorMagicWords("wrappedLineLastNonWhitespaceCharacter", "line");
                     break;
-                case languageEngine.enumerationMoveLocation.next:
+                case languageEngine.enumerationMove.next:
                     if (operation.target == languageEngine.enumerationTarget.emptyLine)
                         verbUnit = setCursorMagicWords("nextBlankLine", "line");
                     break;
-                case languageEngine.enumerationMoveLocation.previous:
+                case languageEngine.enumerationMove.previous:
                     if (operation.target == languageEngine.enumerationTarget.emptyLine)
                         verbUnit = setCursorMagicWords("prevBlankLine", "line");
                     break;
-                case languageEngine.enumerationMoveLocation.forward:
+                case languageEngine.enumerationMove.forward:
                     offset(textEditor, operation.value, operation.select, false);
                     break;
-                case languageEngine.enumerationMoveLocation.backward:
+                case languageEngine.enumerationMove.backward:
                     offset(textEditor, operation.value, operation.select, true);
                     break;
                 } //switch
@@ -202,16 +242,16 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             } //if
             else if (operation.target == languageEngine.enumerationTarget.word) {
                 switch (operation.move) {
-                    case languageEngine.enumerationMoveLocation.start:
+                    case languageEngine.enumerationMove.start:
                         moveToWord(textEditor, operation.select, true);
                         break;
-                    case languageEngine.enumerationMoveLocation.end:
+                    case languageEngine.enumerationMove.end:
                         moveToWord(textEditor, operation.select, false);
                         break;
-                    case languageEngine.enumerationMoveLocation.next:
+                    case languageEngine.enumerationMove.next:
                         moveToAnotherWord(textEditor, false, operation.value, operation.select);
                         break;
-                    case languageEngine.enumerationMoveLocation.previous:
+                    case languageEngine.enumerationMove.previous:
                         moveToAnotherWord(textEditor, true, operation.value, operation.select);
                         break;
                 } //swithch word moves not covered by cursorMove                  
@@ -240,18 +280,37 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                         await textEditor.edit(async builder => await builder.replace(textEditor.selection, definitionSet.parsing.empty));
                 case languageEngine.enumerationOperation.find:
                     const backward =
-                        operation.move == languageEngine.enumerationMoveLocation.previous;
+                        operation.move == languageEngine.enumerationMove.previous;
                     await findNext(backward);
                     break;
                 case languageEngine.enumerationOperation.deselect:
                     deselect(textEditor, operation.move);
                     break;
-                case languageEngine.enumerationOperation.push:
+                case languageEngine.enumerationOperation.pushPosition:
                     push(textEditor);
                     break;
-                case languageEngine.enumerationOperation.pop:
+                case languageEngine.enumerationOperation.popPosition:
                     pop(textEditor, operation.select);
                     break;                   
+                case languageEngine.enumerationOperation.pushText:
+                    switch (operation.target) {
+                        case languageEngine.enumerationTarget.selection:
+                            pushText(textEditor, getSelectionRange(textEditor));
+                            break;
+                        case languageEngine.enumerationTarget.word:
+                            pushText(textEditor, getWordRange(textEditor));
+                            break;
+                        case languageEngine.enumerationTarget.trimmedLine:
+                            pushText(textEditor, getTrimmedLineRange(textEditor));
+                            break;
+                        case languageEngine.enumerationTarget.line:
+                            pushText(textEditor, getLineRange(textEditor));
+                            break;
+                    } // switch operation.target
+                    break;                   
+                case languageEngine.enumerationOperation.popText:
+                    await popText(textEditor, operation.select);
+                    break;
                 case languageEngine.enumerationOperation.return:
                     return indicatorReturn;
                 case languageEngine.enumerationOperation.pause:
@@ -262,8 +321,10 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
 
     this.play = async function(textEditor, macro) {
         if (!macro) return;
-        if (pause == null)
-            stack = [];
+        if (pause == null) {
+            positionStack = [];
+            textStack = [];
+        } //if
         const startIndex = pause == null ? 0 : pause + 1;
         if (!macro[startIndex]) {
             macro == null;
