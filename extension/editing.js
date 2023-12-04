@@ -278,6 +278,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                 case languageEngine.enumerationOperation.delete:
                     if (!textEditor.selection.isEmpty)
                         await textEditor.edit(async builder => await builder.replace(textEditor.selection, definitionSet.parsing.empty));
+                    break;
                 case languageEngine.enumerationOperation.find:
                     const backward =
                         operation.move == languageEngine.enumerationMove.previous;
