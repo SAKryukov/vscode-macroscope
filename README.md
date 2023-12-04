@@ -13,7 +13,7 @@ Macroscope, a VSCode Macro Engine, is a Visual Studio Code Extension used to cre
 
 * Simple rule-based macro definition language
 * Macro definition language is self-documented via a Macro Editor
-* 32 operations, most of them are parametrized
+* 32 operations, most of which are parametrized
 * Macro operations can be edited manually or with a Macro Editor
 * Macro script compilation with clear error diagnostics
 * A last macro script persists the same way as all other persistent workspace data
