@@ -101,10 +101,10 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
 
     const setCursorMagicWords = (verb, unit) => { return { verb: verb, unit: unit }; };
 
-    const copyToClipboard = (textEditor, target) => {
+    const copyToClipboard = async (textEditor, target) => {
         let range, line;
         if (target == null)
-            return vscode.env.clipboard.writeText(textEditor.document.getText(textEditor.selection));
+            return await vscode.env.clipboard.writeText(textEditor.document.getText(textEditor.selection));
         switch (target) {
             case languageEngine.enumerationTarget.word:
                 range = textEditor.document.getWordRangeAtPosition(textEditor.selection.start);
@@ -126,7 +126,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             const endPosition = textEditor.document.positionAt(endPositionOffest);
             range = range.with(startPosition, endPosition);
         } //if
-        vscode.env.clipboard.writeText(textEditor.document.getText(range));
+        await vscode.env.clipboard.writeText(textEditor.document.getText(range));
     }; //copyToClipboard
 
     const deselect = (textEditor, location) => {
@@ -225,10 +225,10 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                         await textEditor.edit(async builder => await builder.replace(textEditor.selection, operation.value));
                     break;
                 case languageEngine.enumerationOperation.copy:
-                    copyToClipboard(textEditor, textEditor.selection, operation.target);
+                    await copyToClipboard(textEditor, operation.target);
                     break;
                 case languageEngine.enumerationOperation.paste:
-                    const text = vscode.env.clipboard.readText();
+                    const text = await vscode.env.clipboard.readText();
                     if (!text) return;
                     if (textEditor.selection.isEmpty)
                         await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, text));
