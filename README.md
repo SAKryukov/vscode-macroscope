@@ -40,11 +40,11 @@ delete
 move start-line
 move forward 1 select
 delete
-[&lt;li>&lt;a href="]
+[<li><a href="]
 pop-text
-["&gt;]
+[">]
 move end-line
-[&lt;/a&gt;&lt;/li&gt;]
+[</a></li>]
 ~~~
 
 
@@ -64,11 +64,11 @@ delete
 move start-trimmed-line
 move forward 1 select
 delete
-[&lt;li>&lt;a href="]
+[<li><a href="]
 pop-text
-["&gt;]
+[">]
 move end-line
-[&lt;/a&gt;&lt;/li&gt;]
+[</a></li>]
 ~~~
 
 ***Spoiler:*** These are just examples. Don't do it!
