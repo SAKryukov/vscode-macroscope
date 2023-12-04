@@ -86,7 +86,7 @@
             const valueMove = new Set(
                 ["left", "right", "up", "down", "next", "previous", "forward", "backward",
                 "next-word", "previous-word", "next-empty-line", "previous-empty-line"]);
-            const selectableActions = new Set(["move", "paste"]);
+            const selectableActions = new Set(["move", "paste", "pop-text"]);
             const valueFilter = new Set("1234567890".split(""));
             const buttonBuild = document.querySelector("#build-macro");
             const selectAction = document.querySelector("#action");
@@ -124,7 +124,7 @@
                     if (event.key == "Enter")
                         add();
                 } //control.onkeydown
-            buttonBuild.onclick = () => {
+            const build = () => {
                 let macro = "";
                 for (const element of content.childNodes)
                     macro += element.textContent + "\n";
@@ -136,7 +136,8 @@
                     },
                 })
                 setTimeout(() => content.setAttribute("contenteditable", "true"));
-            }; //buttonBuild.onclick
+            }; //build
+            buttonBuild.onclick = build;
             const preservePersistentMacro = event => {
                 vscode?.postMessage({
                     macro: {
@@ -157,8 +158,10 @@
                         errors.appendChild(p);
                         p.scrollIntoView({ block: "end" });
                     } //loop
-                else if (event.data.innerHTML)
+                else if (event.data.innerHTML) {
                     content.innerHTML = event.data.innerHTML;
+                    build();
+                } //if
             }; //window.onmessage
             selectAction.focus();
         }; //window.onload
