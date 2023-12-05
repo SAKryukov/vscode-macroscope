@@ -26,10 +26,12 @@ exports.RuleEngine = function(definitionSet) {
         pushText: 0, popText: 0,
     }; //enumerationOperation
     this.enumerationTarget = {
-        character: 0, line: 0, trimmedLine: 0, emptyLine: 0, word: 0, selection: 0, 
+        character: 0, line: 0, trimmedLine: 0, emptyLine: 0, word: 0, selection: 0,
+        forward: 0, backward: 0, // not enumerationMove.forward or .backward! used with numerationMove,matchInLine
     };
     this.enumerationMove = {
-        increment: 0, decrement: 0, start: 0, end: 0, next: 0, previous: 0, forward: 0, backward: 0,
+        increment: 0, decrement: 0, start: 0, end: 0, next: 0, previous: 0,
+        forward: 0, backward: 0, matchInLine: 0,
     };
     utility.preprocessEnumeration(this.enumerationOperation);
     utility.preprocessEnumeration(this.enumerationTarget);
@@ -37,11 +39,13 @@ exports.RuleEngine = function(definitionSet) {
 
     const MacroOperation = function(operation, target, move, value, select, index) {
         this.operation = operation; //this.enumerationOperation
+        /*
         this.target = target; //this.enumerationTarget
         this.move = move; //this.enumerationMoveLocation
         this.value = value; //number of steps or text to insert/replace
         this.select = select;
         this.index = index;
+        */
     }; //MacroOperation
 
     const operationMap = (() => {
@@ -172,6 +176,16 @@ exports.RuleEngine = function(definitionSet) {
             macroOperation.target = this.enumerationTarget.emptyLine;
             macroOperation.move = this.enumerationMove.previous;
         });
+        map.set("match-in-line-forward", macroOperation => {
+            macroOperation.target = this.enumerationTarget.forward;
+            macroOperation.move = this.enumerationMove.matchInLine;
+            return true; //indicates special parsing for matchInLine
+        });
+        map.set("match-in-line-backward", macroOperation => {
+            macroOperation.target = this.enumerationTarget.backward;
+            macroOperation.move = this.enumerationMove.matchInLine;
+            return true; //indicates special parsing for matchInLine
+        });
         return map;
     })(); //moveMap
 
@@ -204,12 +218,50 @@ exports.RuleEngine = function(definitionSet) {
         return line;
     }; //filterOutCommentAndPushText
 
+    const clearSplit = text => {
+        const split = text.split(definitionSet.parsing.blankpace);
+        const reSplit = [];
+        for (const part of split) {
+            const word = part.trim();
+            if (word.length > 0) reSplit.push(word);
+        } //loop
+        return reSplit;
+    }; //clearSplit
+
+    const parseIntegerValue = text => {
+        if (!text)
+            return definitionSet.value.default;
+        let value = parseInt(text.substring(0, definitionSet.value.maximumSize));
+        if (isNaN(value))
+            value = definitionSet.value.default;
+        if (value < 1)
+            value = definitionSet.value.default;
+        return value;
+    }; //parseIntegerValue
+
+    const parseMatchInLine = (macroOperation, line, count) => {
+        if (macroOperation.move != this.enumerationMove.matchInLine) return;
+        const startText = line.indexOf(definitionSet.parsing.textStart);
+        const endText = line.lastIndexOf(definitionSet.parsing.textEnd);
+        if (startText < 0 || endText < 0) {
+            errors.push({ count, line, unrecognized: line }); //SA???
+            return true;
+        } //if
+        const text = line.substring(startText + 1, endText);
+        line = line.substring(endText + 1).trim();
+        const value = parseIntegerValue(line);
+        macroOperation.value = { text, value };
+        return true;
+    }; //parseMatchInLine
+
     const parseLine = (line, count) => {
         line = filterOutCommentAndPushText(line, count);
         if (!line)
             return;
-        let select = line.includes("select");
-        const words = line.split(definitionSet.parsing.blankpace);
+        const select = line.endsWith(definitionSet.parsing.select);
+        if (select)
+            line = line.substring(0, line.lastIndexOf(definitionSet.parsing.select)).trim();
+        const words = clearSplit(line);
         if (!words) return;
         if (words.length < 1) return;
         const macroOperation = new MacroOperation();
@@ -223,19 +275,17 @@ exports.RuleEngine = function(definitionSet) {
                 errors.push({ count, line, unrecognized: words[0] });
         } //if
         if (words.length > 1) {
-            const setter = moveMap.get(words[1]);
-            if (setter != null)
-                setter(macroOperation);
-            else
+                const setter = moveMap.get(words[1]);
+            if (setter != null) {
+                if (setter(macroOperation)) {
+                    if (parseMatchInLine(macroOperation, line, count));
+                        return;
+                } //if
+            } else
                 errors.push({ count, line, unrecognized: words[1] });
         } //if
-        if (words.length > 2) { // value or "select"
-            macroOperation.value = parseInt(words[2].substring(0, definitionSet.value.maximumSize));
-            if (isNaN(macroOperation.value))
-                macroOperation.value = definitionSet.value.default;
-            if (macroOperation.value < 1)
-                macroOperation.value = definitionSet.value.default;
-        } //if
+        if (words.length > 2) // value or "select"
+            macroOperation.value = parseIntegerValue(words[2]);
         if (macroOperation.value == null)
             macroOperation.value = definitionSet.value.default;
         operationsCore.push(macroOperation);    
@@ -246,8 +296,12 @@ exports.RuleEngine = function(definitionSet) {
         errors = [];
         const lines = text.split("\n");
         let count = 0;
+        try {
         for (let line of lines)
             parseLine(line, ++count);
+        } catch (ex) {
+            console.log(ex);
+        }
         this.operations = operationsCore;
         if (errors.length < 1)
             errors = null;

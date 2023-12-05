@@ -41,11 +41,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
     } //moveToWord
 
     const firstNonblank = (line, backward) => {
-        const marker = " ";
+        const marginal = () => backward ? 0 : line.length - 1;
+        const marker = definitionSet.parsing.blankpace;
         const relativeWordPosition = backward
             ? line.lastIndexOf(marker)
             : line.indexOf(marker);
-        if (relativeWordPosition < 0) return null;
+        if (relativeWordPosition < 0) return marginal;
         const lastIndex = backward
             ? 0
             : line.length - 1;
@@ -58,7 +59,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                 if (line[index] != marker)
                     return index;
         } //if
-        return null;
+        return marginal;
     }; //firstNonblank
 
     const moveSingleWord = (textEditor, backward, select) => {
@@ -67,16 +68,16 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         const lineRange = line.range;
         const lineText = line.text;
         const lineStart = textEditor.document.offsetAt(lineRange.start);
-        const selectionAt = textEditor.document.offsetAt(selection.start);
+        const offsetStart = select && !backward
+            ? textEditor.document.offsetAt(selection.end)
+            : textEditor.document.offsetAt(selection.start);
         const subLine = backward
-            ? lineText.substring(0, selectionAt - lineStart)
-            : lineText.substring(selectionAt - lineStart);
+            ? lineText.substring(0, offsetStart - lineStart)
+            : lineText.substring(offsetStart - lineStart);       
         const relativeWordPosition = firstNonblank(subLine, backward);
-        if (relativeWordPosition == null)
-            return;
         const finalOffset = backward
             ? lineStart + relativeWordPosition
-            : selectionAt + relativeWordPosition;
+            : offsetStart + relativeWordPosition;
         const targetPosition = textEditor.document.positionAt(finalOffset);
         if (select)
             textEditor.selection = new vscode.Selection(selection.start, targetPosition);

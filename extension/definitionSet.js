@@ -43,6 +43,7 @@ exports.definitionSet = {
         textStart: "[",
         textEnd: "]",
         text: value => value.substring(1, value.length - 1),
+        select: "select",
     },
     scriptPersistentStateKey: "macro.editor.start.persistent.state",
 };

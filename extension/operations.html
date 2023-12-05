@@ -18,6 +18,8 @@
         main > summary { margin-top: 1em; color: red; }
         main, footer, header, button { padding: 0.2em 1em 0.2em 1em; }
         button { padding-top: 2px; padding-bottom: 0px; }
+        optgroup { color: purple; background-color:hsl(214, 41%, 92%); }
+        option { color: black; background-color: white; }
         input[type=text] { width: 2em; }
     </style>
 </head>
@@ -29,43 +31,65 @@
             <option selected="true">move</option>
             <option value="[]">text</option>
             <option value="//">comment</option>
-            <option value="copy">copy selection</option>
-            <option value="copy-word">copy word</option>
-            <option value="copy-line">copy line</option>
-            <option value="copy-trimmed-line">copy trimmed line</option>
-            <option>paste</option>
-            <option>delete</option>
-            <option value="find-next">find next</option>
-            <option value="find-previous">find previous</option>
-            <option value="deselect-start">deselect start</option>
-            <option value="deselect-end">deselect end</option>
-            <option value="push-position">push position</option>
-            <option value="pop-position">pop position</option>
-            <option value="push-selection">push selection text</option>
-            <option value="push-word">push word text</option>
-            <option value="push-line">push line text</option>
-            <option value="push-trimmed-line">push trimmed line text</option>
-            <option value="pop-text">pop text</option>
-            <option>pause</option>
-            <option>return</option>
+            <optgroup label="Selection">
+                <option>delete</option>
+                <option value="deselect-start">start</option>
+                <option value="deselect-end">end</option>    
+            </optgroup>
+            <optgroup label="Editor Find">
+                <option value="find-next">find next</option>
+                <option value="find-previous">find previous</option>    
+            </optgroup>
+            <optgroup label="Position stack">
+                <option value="push-position">push</option>
+                <option value="pop-position">pop</option>
+            </optgroup>
+            <optgroup label="Text stack">
+                <option value="push-selection">push selection text</option>
+                <option value="push-word">push word text</option>
+                <option value="push-line">push line text</option>
+                <option value="push-trimmed-line">push trimmed line text</option>
+                <option value="pop-text">pop</option>
+                </optgroup>
+                <optgroup label="Clipboard">
+                    <option value="copy">copy selection</option>
+                    <option value="copy-word">copy word</option>
+                    <option value="copy-line">copy line</option>
+                    <option value="copy-trimmed-line">copy trimmed line</option>
+                    <option>paste</option>    
+                </optgroup>
+                <optgroup label="Flow control">
+                <option>pause</option>
+                <option>return</option>    
+            </optgroup>
         </select>
         <select id="move">
-            <option>forward</option>
-            <option>backward</option>
             <option>left</option>
             <option selected="true">right</option>
             <option>up</option>
             <option>down</option>
-            <option value="word-start">start of word</option>
-            <option value="word-end">end of word</option>
-            <option value="start-line">start of line</option>
-            <option value="end-line">end of line</option>
-            <option value="start-trimmed-line">start of trimmed line</option>
-            <option value="end-trimmed-line">end of trimmed line</option>
-            <option value="next-word">next word</option>
-            <option value="previous-word">previous word</option>
-            <option value="next-empty-line">next empty line</option>
-            <option value="previous-empty-line">previous empty line</option>
+            <optgroup label="Global">
+                <option>forward</option>
+                <option>backward</option>    
+                </optgroup>
+            <optgroup label="Context">
+                <option value="word-start">start of word</option>
+                <option value="word-end">end of word</option>
+                <option value="start-line">start of line</option>
+                <option value="end-line">end of line</option>
+                <option value="start-trimmed-line">start of trimmed line</option>
+                <option value="end-trimmed-line">end of trimmed line</option>
+            </optgroup>
+            <optgroup label="Order">
+                <option value="next-word">next word</option>
+                <option value="previous-word">previous word</option>
+                <option value="next-empty-line">next empty line</option>
+                <option value="previous-empty-line">previous empty line</option>    
+            </optgroup>
+            <optgroup label="Search">
+                <option value="match-in-line-forward">match in line, forward</up></option>
+                <option value="match-in-line-backward">match in line, backward</option>    
+            </optgroup>
         </select>
         <input id="value" type="text" value="1" />
         <label><input id="select" type="checkbox"> Select</label>
@@ -83,9 +107,11 @@
             const vscode = typeof acquireVsCodeApi == typeof undefined ?
                 null : acquireVsCodeApi();
             const moveAction = new Set(["move"]);
+            const moveMatchInLine = new Set(["match-in-line-forward", "match-in-line-backward"]); 
             const valueMove = new Set(
                 ["left", "right", "up", "down", "next", "previous", "forward", "backward",
-                "next-word", "previous-word", "next-empty-line", "previous-empty-line"]);
+                "next-word", "previous-word", "next-empty-line", "previous-empty-line",
+                "match-in-line-forward", "match-in-line-backward"]);
             const selectableActions = new Set(["move"]);
             const valueFilter = new Set("1234567890".split(""));
             const buttonBuild = document.querySelector("#build-macro");
@@ -108,8 +134,9 @@
                 const item = document.createElement("p");
                 let line = `${selectAction.value}`;
                 const isMove = moveAction.has(selectAction.value);
+                const isMatchInLine = moveMatchInLine.has(selectMove.value);
                 if (isMove)
-                    line = `${line} ${selectMove.value}`;
+                    line = `${line} ${selectMove.value} ${isMatchInLine ? "[]" : ""}`;
                 let value = editValue.value;
                 if (!value)
                     value = "1";
