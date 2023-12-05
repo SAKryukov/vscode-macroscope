@@ -82,11 +82,11 @@
         window.onload = () => {
             const vscode = typeof acquireVsCodeApi == typeof undefined ?
                 null : acquireVsCodeApi();
-            const moveAction = new Set(["move", "deselect"]);
+            const moveAction = new Set(["move"]);
             const valueMove = new Set(
                 ["left", "right", "up", "down", "next", "previous", "forward", "backward",
                 "next-word", "previous-word", "next-empty-line", "previous-empty-line"]);
-            const selectableActions = new Set(["move", "paste", "pop-text"]);
+            const selectableActions = new Set(["move"]);
             const valueFilter = new Set("1234567890".split(""));
             const buttonBuild = document.querySelector("#build-macro");
             const selectAction = document.querySelector("#action");
@@ -111,7 +111,7 @@
                 let value = editValue.value;
                 if (!value)
                     value = "1";
-                if (isMove && valueMove.has(selectMove.value) && selectAction.value != "deselect")
+                if (isMove && valueMove.has(selectMove.value))
                     line = `${line} ${value}`;
                 if (checkSelect.checked && selectableActions.has(selectAction.value))
                     line = `${line} select`;

@@ -174,7 +174,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         textStack.push(textEditor.document.getText(range));
     }; //pushText
 
-    const popText = async (textEditor, select) => {
+    const popText = async textEditor => {
         const text = textStack.pop();
         if (!text) return;
         const startSelection = textEditor.selection.start;
@@ -182,12 +182,6 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             await textEditor.edit(async builder => await builder.insert(startSelection, text));
         else
             await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
-        if (select) {
-            const startOffest = textEditor.document.offsetAt(startSelection);
-            const endOffset = startOffest + text.length;
-            const endSelecton = textEditor.document.positionAt(endOffset);
-            textEditor.selection = new vscode.Selection(startSelection, endSelecton);
-        } //if
     }; //popText
 
     const playOperation = async (textEditor, operation) => {
@@ -292,7 +286,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     break;
                 case languageEngine.enumerationOperation.popPosition:
                     pop(textEditor, operation.select);
-                    break;                   
+                    break;     
                 case languageEngine.enumerationOperation.pushText:
                     switch (operation.target) {
                         case languageEngine.enumerationTarget.selection:
@@ -310,7 +304,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     } // switch operation.target
                     break;                   
                 case languageEngine.enumerationOperation.popText:
-                    await popText(textEditor, operation.select);
+                    await popText(textEditor);
                     break;
                 case languageEngine.enumerationOperation.return:
                     return indicatorReturn;
