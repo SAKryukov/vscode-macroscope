@@ -1,0 +1,4 @@
+move end-line
+move end-trimmed-line select
+delete
+move down
