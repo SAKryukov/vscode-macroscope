@@ -96,8 +96,10 @@
             const checkSelect = document.querySelector("#select");
             const content = document.querySelector("body > main > section");
             const errors = document.querySelector("body > main > summary");
-            selectAction.onchange = event => 
-                selectMove.disabled = event.target.selectedIndex != 0;
+            selectAction.onchange = event => {
+                for (const control of [selectMove, editValue, checkSelect])
+                    control.disabled = event.target.selectedIndex != 0;
+            }; //selectAction.onchange
             editValue.onkeydown = event => {
                 if (!valueFilter.has(event.key) && event.key != "Backspace")
                     event.preventDefault();
