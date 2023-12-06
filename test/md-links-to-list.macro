@@ -1,5 +1,4 @@
-// before execution, find: ](
-find-next
+move match-in-line-forward [](] 1 select
 delete
 push-position
 move end-trimmed-line

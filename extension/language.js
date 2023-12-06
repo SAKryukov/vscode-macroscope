@@ -251,6 +251,7 @@ exports.RuleEngine = function(definitionSet) {
         line = line.substring(endText + 1).trim();
         const value = parseIntegerValue(line);
         macroOperation.value = { text, value };
+        operationsCore.push(macroOperation);
         return true;
     }; //parseMatchInLine
 
@@ -288,7 +289,7 @@ exports.RuleEngine = function(definitionSet) {
             macroOperation.value = parseIntegerValue(words[2]);
         if (macroOperation.value == null)
             macroOperation.value = definitionSet.value.default;
-        operationsCore.push(macroOperation);    
+        operationsCore.push(macroOperation);
     }; //parseLine
 
     this.parse = text => {

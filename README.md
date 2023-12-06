@@ -23,35 +23,17 @@ Macroscope, a VSCode Macro Engine, is a Visual Studio Code Extension used to cre
 
 ### Examples:
 
-This macro script can be used to convert Markdown lines with references into an HTML list. It moves down through the original text. Before execution, the Find operation should specify the pattern &ldquo;`](`&rdquo;, and then the script should be executed repeatedly:
-
+This simple script cleans the lines from trailing whitespace characters:
 ~~~
-// before execution, find: ](
-find-next
-delete
-push-position
 move end-line
-move backward 1 select
+move end-trimmed-line select
 delete
-pop-position
-move end-line select
-push-selection
-delete
-move start-line
-move forward 1 select
-delete
-[<li><a href="]
-pop-text
-[">]
-move end-line
-[</a></li>]
+move down
 ~~~
 
-
-The improved version will work if the original lines are indented in an arbitrary manner:
+This macro script can be used to convert Markdown lines with references into an HTML list. It moves down through the original text if activated repeatedly. It will work even if the lines with references are interlaced with unrelated or empty lines and are  in an arbitrary manner:
 ~~~
-// before execution, find: ](
-find-next
+move match-in-line-forward [](] 1 select
 delete
 push-position
 move end-trimmed-line
@@ -67,7 +49,7 @@ delete
 [<li><a href="]
 pop-text
 [">]
-move end-line
+move end-trimmed-line
 [</a></li>]
 ~~~
 

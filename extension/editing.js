@@ -185,6 +185,56 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
     }; //popText
 
+    const findNthMatch = (text, pattern, backward, count) => {
+        let position; 
+        let result;
+        for (let index = 0; index < count; ++index) {
+            if (position == undefined)
+                position = backward ? text.length - 1 : 0;
+            else
+                position = backward ? position - pattern.length : position + pattern.length;
+            if (position < 0) return null;
+            result = backward ? text.lastIndexOf(pattern, position) : text.indexOf(pattern, position);
+            if (result < 0)
+                return null;
+        } //loop
+        return result;
+    }; //findNthMatch
+
+    const moveToMatchInOneLine = (textEditor, value, select, backward, lineNumber) => {
+        const line = textEditor.document.lineAt(new vscode.Position(lineNumber, 0));
+        if (!line) return;
+        const lineRange = line.range;
+        const text = line.text;
+        const index = findNthMatch(text, value.text, backward, value.value);
+        if (!index || index < 0) return;
+        const offsetStart = textEditor.document.offsetAt(lineRange.start) + index;
+        const offsetEnd = offsetStart + value.text.length;
+        const positionStart = textEditor.document.positionAt(offsetStart);
+        const positionEnd = textEditor.document.positionAt(offsetEnd);
+        textEditor.selection = select
+            ? new vscode.Selection(positionStart, positionEnd)
+            : new vscode.Selection(positionStart, positionStart);
+        return true;
+    }; //moveToMatchInOneLine
+
+    const validatePosition = (document, position) => {
+        const adjustedPosition = document.validatePosition(position);
+        return adjustedPosition.isEqual(position);
+    } //new vscode.Position(lineNumber, 0)
+
+    const moveToMatchInLine = (textEditor, value, select, backward) => {
+        let lineNumber = textEditor.document.lineAt(textEditor.selection.start).range.start.line;
+        const increment = backward ? -1 : 1;
+        while (lineNumber >= 0) {
+            if (!validatePosition(textEditor.document, new vscode.Position(lineNumber, 0)))
+                return;
+            const result = moveToMatchInOneLine(textEditor, value, select, backward, lineNumber);
+            if (result) return;
+            lineNumber = lineNumber + increment;
+        } //loop
+    }; //moveToMatchInLine
+
     const playOperation = async (textEditor, operation) => {
         if (operation.operation == languageEngine.enumerationOperation.move) {
             let verbUnit = null;
@@ -249,8 +299,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     case languageEngine.enumerationMove.previous:
                         moveToAnotherWord(textEditor, true, operation.value, operation.select);
                         break;
-                } //swithch word moves not covered by cursorMove                  
-            } //if word moves not covered by cursorMove
+                    } //swithch word moves not covered by cursorMove                  
+            } else if (operation.move == languageEngine.enumerationMove.matchInLine) {
+                moveToMatchInLine(textEditor,
+                    operation.value, operation.select,
+                    operation.target == languageEngine.enumerationTarget.backward);
+            } //if
         } else {
             switch (operation.operation) { //non move:
                 case languageEngine.enumerationOperation.text:
