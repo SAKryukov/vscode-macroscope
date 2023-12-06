@@ -27,17 +27,17 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         await vscode.commands.executeCommand(command);
     }; //findNext
 
+    const setSelection = (textEditor, finalPosition, select) =>
+        textEditor.selection = new vscode.Selection(
+            select ? textEditor.selection.start : finalPosition,
+            finalPosition
+        );
+
     const moveToWord = (textEditor, select, start) => {
         const range = textEditor.document.getWordRangeAtPosition(textEditor.selection.start);
         if (!range) return;
         const finalPosition = start ? range.start : range.end;
-        if (select) {
-            if (start)
-                textEditor.selection = new vscode.Selection(finalPosition, textEditor.selection.start);
-            else
-                textEditor.selection = new vscode.Selection(textEditor.selection.start, finalPosition);
-        } else
-            textEditor.selection = new vscode.Selection(finalPosition, finalPosition);
+        setSelection(textEditor, finalPosition, select);
     } //moveToWord
 
     const firstNonblank = (line, backward) => {
@@ -62,7 +62,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         return marginal;
     }; //firstNonblank
 
-    const moveSingleWord = (textEditor, backward, select) => {
+    const moveToSingleWord = (textEditor, backward, select) => {
         const selection = textEditor.selection;
         const line = textEditor.document.lineAt(selection.start);
         const lineRange = line.range;
@@ -79,15 +79,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             ? lineStart + relativeWordPosition
             : offsetStart + relativeWordPosition;
         const targetPosition = textEditor.document.positionAt(finalOffset);
-        if (select)
-            textEditor.selection = new vscode.Selection(selection.start, targetPosition);
-        else
-            textEditor.selection = new vscode.Selection(targetPosition, targetPosition);
-    } //moveSingleWord
+        setSelection(textEditor, targetPosition, select);
+    } //moveToSingleWord
 
     const moveToAnotherWord = (textEditor, backward, value, select) => {
         for (let index = 0; index < value; ++index)
-            moveSingleWord(textEditor, backward, select);
+            moveToSingleWord(textEditor, backward, select);
     } //moveToAnotherWord
 
     const push = textEditor => {
@@ -145,10 +142,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         let endOffset = startOffset + value;
         if (endOffset < 0) endOffset = 0;
         const finalPosition = textEditor.document.positionAt(endOffset);
-        if (select)
-            textEditor.selection = new vscode.Selection(selection.start, finalPosition);
-        else
-            textEditor.selection = new vscode.Selection(finalPosition, finalPosition);
+        setSelection(textEditor, finalPosition, select);
     }; //offset
 
     const getSelectionRange = textEditor =>
