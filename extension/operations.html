@@ -11,12 +11,14 @@
         body { display: flex; flex-direction: column; }
         main { flex: auto; background-color: snow; overflow: auto; }
         header { background-color: gainsboro; border-bottom: thin solid gray; }
-        header { display: flex; flex-direction: row; align-items: center; justify-content: space-around; flex-wrap: wrap; }
+        header { display: flex; flex-direction: row; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
         label { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; }
         button, label, footer { white-space: nowrap; }
         footer { background-color:bisque; border-top: thin solid brown; }
         main > summary { margin-top: 1em; color: red; }
-        main, footer, header, button { padding: 0.2em 1em 0.2em 1em; }
+        main, footer, button { padding: 0.2em 1em 0.2em 1em; }
+        header { padding: 0.2em 0.4em 0.2em 0.4em; }
+        input, select, button:last-of-type { margin-left: 0.4em; }
         button { padding-top: 2px; padding-bottom: 0px; }
         optgroup { color: purple; background-color:hsl(214, 41%, 92%); }
         option { color: black; background-color: white; }
