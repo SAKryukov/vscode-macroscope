@@ -23,7 +23,7 @@ Macroscope, a VSCode Macro Engine, is a Visual Studio Code Extension used to cre
 
 ### Examples:
 
-This simple script cleans the lines from trailing whitespace characters:
+This simple script cleans the lines off trailing whitespace characters:
 ~~~
 move end-line
 move end-trimmed-line select
@@ -31,7 +31,7 @@ delete
 move down
 ~~~
 
-This macro script can be used to convert Markdown lines with references into an HTML list. It moves down through the original text if activated repeatedly. It will work even if the lines with references are interlaced with unrelated or empty lines and are  in an arbitrary manner:
+This macro script can be used to convert Markdown lines with references into an HTML list. It moves down through the original text if activated repeatedly. It will work even if the lines with references are interlaced with unrelated or empty lines and are indented in an arbitrary manner:
 ~~~
 move match-in-line-forward [](] 1 select
 delete
