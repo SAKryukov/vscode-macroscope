@@ -169,14 +169,17 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         textStack.push(textEditor.document.getText(range));
     }; //pushText
 
+    const placeText = async (textEditor, text) => {
+        if (textEditor.selection.isEmpty)
+            await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, text));
+        else
+            await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
+    }; //placeText
+
     const popText = async textEditor => {
         const text = textStack.pop();
         if (!text) return;
-        const startSelection = textEditor.selection.start;
-        if (textEditor.selection.isEmpty)
-            await textEditor.edit(async builder => await builder.insert(startSelection, text));
-        else
-            await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
+        await placeText(textEditor, text);
     }; //popText
 
     const findNthMatch = (text, pattern, backward, count) => {
@@ -302,21 +305,14 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         } else {
             switch (operation.operation) { //non move:
                 case languageEngine.enumerationOperation.text:
-                    if (textEditor.selection.isEmpty)
-                        await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, operation.value));
-                    else
-                        await textEditor.edit(async builder => await builder.replace(textEditor.selection, operation.value));
-                    break;
+                    await placeText(textEditor, operation.value);
                 case languageEngine.enumerationOperation.copy:
                     await copyToClipboard(textEditor, operation.target);
                     break;
                 case languageEngine.enumerationOperation.paste:
                     const text = await vscode.env.clipboard.readText();
                     if (!text) return;
-                    if (textEditor.selection.isEmpty)
-                        await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, text));
-                    else
-                        await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
+                    await placeText(textEditor, text);
                     break;
                 case languageEngine.enumerationOperation.delete:
                     if (!textEditor.selection.isEmpty)
