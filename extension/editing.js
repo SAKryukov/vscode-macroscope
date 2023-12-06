@@ -40,50 +40,58 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         setSelection(textEditor, finalPosition, select);
     } //moveToWord
 
-    const firstNonblank = (line, backward) => {
-        const marginal = () => backward ? 0 : line.length - 1;
-        const marker = definitionSet.parsing.blankpace;
-        const relativeWordPosition = backward
-            ? line.lastIndexOf(marker)
-            : line.indexOf(marker);
-        if (relativeWordPosition < 0) return marginal;
-        const lastIndex = backward
-            ? 0
-            : line.length - 1;
-        if (backward) {
-            for (let index = relativeWordPosition; index >= lastIndex; --index)
-                if (line[index] != marker)
-                    return index + 1;
-        } else {
-            for (let index = relativeWordPosition; index < lastIndex; ++index)
-                if (line[index] != marker)
-                    return index;
-        } //if
-        return marginal;
-    }; //firstNonblank
+    const validatePosition = (document, position) => {
+        const adjustedPosition = document.validatePosition(position);
+        return adjustedPosition.isEqual(position);
+    } //new vscode.Position(lineNumber, 0)
 
     const moveToSingleWord = (textEditor, backward, select) => {
-        const selection = textEditor.selection;
-        const line = textEditor.document.lineAt(selection.start);
-        const lineRange = line.range;
-        const lineText = line.text;
-        const lineStart = textEditor.document.offsetAt(lineRange.start);
-        const offsetStart = select && !backward
-            ? textEditor.document.offsetAt(selection.end)
-            : textEditor.document.offsetAt(selection.start);
-        const subLine = backward
-            ? lineText.substring(0, offsetStart - lineStart)
-            : lineText.substring(offsetStart - lineStart);       
-        const relativeWordPosition = firstNonblank(subLine, backward);
-        const finalOffset = backward
-            ? lineStart + relativeWordPosition
-            : offsetStart + relativeWordPosition;
-        const targetPosition = textEditor.document.positionAt(finalOffset);
-        setSelection(textEditor, targetPosition, select);
+        const increment = backward ? -1 : 1;
+        let position = textEditor.selection.start;
+        let word = textEditor.document.getWordRangeAtPosition(position);
+        if (word && backward) {
+            if (position.isEqual(word.start)) {
+                if (backward && position.character == 0) return;
+                position = position.translate(0, increment);
+                if (!validatePosition(textEditor.document, position))
+                    return;
+            } else {
+                setSelection(textEditor, word.start, select);
+                return;
+            } //if
+        } else if (word) {
+            position = word.end.translate(0, increment);
+            if (!validatePosition(textEditor.document, position)) {
+                setSelection(
+                    textEditor,
+                    textEditor.document.lineAt(textEditor.selection.start).range.end,
+                    select);
+                return;
+            } //if           
+        } //if
+        while (true) {
+            word = textEditor.document.getWordRangeAtPosition(position);
+            if (word)
+                break;
+            else {
+                if (backward && position.character == 0) {
+                    setSelection(
+                        textEditor,
+                        textEditor.document.lineAt(textEditor.selection.start).range.start,
+                        select);
+                    return;
+                } //if
+                position = position.translate(0, increment);
+            } //if
+            if (!validatePosition(textEditor.document, position))
+                break;
+        } //loop
+        if (!word) return;
+        setSelection(textEditor, word.start, select);
     } //moveToSingleWord
 
     const moveToAnotherWord = (textEditor, backward, value, select) => {
-        for (let index = 0; index < value; ++index)
+            for (let index = 0; index < value; ++index)
             moveToSingleWord(textEditor, backward, select);
     } //moveToAnotherWord
 
@@ -214,11 +222,6 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             : new vscode.Selection(positionStart, positionStart);
         return true;
     }; //moveToMatchInOneLine
-
-    const validatePosition = (document, position) => {
-        const adjustedPosition = document.validatePosition(position);
-        return adjustedPosition.isEqual(position);
-    } //new vscode.Position(lineNumber, 0)
 
     const moveToMatchInLine = (textEditor, value, select, backward) => {
         let lineNumber = textEditor.document.lineAt(textEditor.selection.start).range.start.line;
