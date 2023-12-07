@@ -341,8 +341,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         } else {
             switch (operation.operation) { //non move:
                 case languageEngine.enumerationOperation.text:
-                    const json = `["${operation.value}"]`;
-                    await placeText(textEditor, JSON.parse(json)[0]);
+                    await placeText(textEditor, operation.value);
                 case languageEngine.enumerationOperation.copy:
                     await copyToClipboard(textEditor, operation.target);
                     break;
