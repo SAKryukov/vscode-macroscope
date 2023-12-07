@@ -41,11 +41,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
     } //new vscode.Position(lineNumber, 0)
 
     const moveToSingleWord = (textEditor, backward, select) => {
-        const line = textEditor.document.lineAt(textEditor.selection.start);
+        const selectionStart = backward ? textEditor.selection.end : textEditor.selection.start;
+        const line = textEditor.document.lineAt(textEditor.selection.active);
         const isPositionMarginal = position =>
             backward ? position.character <= 1 : position.character >= line.text.length;
         const increment = backward ? -1 : 1;
-        let position = textEditor.selection.start;
+        let position = textEditor.selection.active;
         let word = textEditor.document.getWordRangeAtPosition(position);
         if (word) { // go out of word:
             position = backward ? word.start : word.end;
@@ -64,9 +65,8 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             } //if
         } //loop
         if (!word) return;
-        textEditor.selection = backward
-            ? new vscode.Selection(select ? word.end : word.start, word.start)
-            : new vscode.Selection(word.start, select ? word.end : word.start)
+        textEditor.selection =
+            new vscode.Selection(select ? selectionStart : word.start, word.start);
     } //moveToSingleWord
 
     const moveToAnotherWord = (textEditor, backward, value, select) => {
