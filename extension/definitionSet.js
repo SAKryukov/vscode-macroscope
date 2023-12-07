@@ -44,6 +44,9 @@ exports.definitionSet = {
         textEnd: "]",
         text: value => value.substring(1, value.length - 1),
         select: "select",
+        unescape: text => text
+            .replaceAll("\\n", "\n")
+            .replaceAll("\\t", "\t"),
     },
     typography: {
         lineSeparator: "\n",

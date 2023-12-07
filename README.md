@@ -31,6 +31,28 @@ delete
 move down
 ~~~
 
+This script converts human-readable lines of text into a definition set with values, taken from these lines.
+It trims off trailing whitespace characters only on the right, to include left indentation spaces in the constants:
+~~~
+move match-in-line-forward [ ] 1
+move end-line
+move end-trimmed-line select
+delete
+push-line
+select-line
+camel-case
+select-line
+push-line
+select-line
+delete
+[public const string ]
+pop-text
+[ = "]
+pop-text
+[";]
+move down
+~~~
+
 This macro script can be used to convert Markdown lines with references into an HTML list. It moves down through the original text if activated repeatedly. It will work even if the lines with references are interlaced with unrelated or empty lines and are indented in an arbitrary manner:
 ~~~
 move match-in-line-forward [](] 1 select

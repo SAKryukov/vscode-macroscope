@@ -1,0 +1,17 @@
+move match-in-line-forward [ ] 1
+move end-line
+move end-trimmed-line select
+delete
+push-line
+select-line
+camel-case
+select-line
+push-line
+select-line
+delete
+[public const string ]
+pop-text
+[ = "]
+pop-text
+[";]
+move down
