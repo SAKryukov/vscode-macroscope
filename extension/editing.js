@@ -143,11 +143,11 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
     const getSelectionRange = textEditor =>
         new vscode.Selection(textEditor.selection.start, textEditor.selection.end);
     const getWordRange = textEditor =>
-        textEditor.document.getWordRangeAtPosition(textEditor.selection.start);
+        textEditor.document.getWordRangeAtPosition(textEditor.selection.active);
     const getLineRange = textEditor =>
-        textEditor.document.lineAt(textEditor.selection.start).range;
+        textEditor.document.lineAt(textEditor.selection.active).range;
     const getTrimmedLineRange = textEditor => {
-        const range = textEditor.document.lineAt(textEditor.selection.start).range;
+        const range = textEditor.document.lineAt(textEditor.selection.active).range;
         const text = textEditor.document.getText(range);
         const fullLength = text.length;
         const offsetLeft = fullLength - text.trimLeft().length;
@@ -166,7 +166,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
 
     const placeText = async (textEditor, text) => {
         if (textEditor.selection.isEmpty)
-            await textEditor.edit(async builder => await builder.insert(textEditor.selection.start, text));
+            await textEditor.edit(async builder => await builder.insert(textEditor.selection.active, text));
         else
             await textEditor.edit(async builder => await builder.replace(textEditor.selection, text));
     }; //placeText
@@ -211,7 +211,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
     }; //moveToMatchInOneLine
 
     const moveToMatchInLine = (textEditor, value, select, backward) => {
-        let lineNumber = textEditor.document.lineAt(textEditor.selection.start).range.start.line;
+        let lineNumber = textEditor.document.lineAt(textEditor.selection.active).range.start.line;
         const increment = backward ? -1 : 1;
         while (lineNumber >= 0) {
             if (!validatePosition(textEditor.document, new vscode.Position(lineNumber, 0)))
