@@ -1,9 +1,9 @@
 /*
+Macrosocope
 
-Copyright (c) Sergey A Kryukov
-https://github.com/SAKryukov/vscode-yacc
+Copyright (c) 2023 by Sergey A Kryukov
+https://github.com/SAKryukov/vscode-macroscope
 https://www.SAKryukov.org
-
 */
 
 "use strict";
