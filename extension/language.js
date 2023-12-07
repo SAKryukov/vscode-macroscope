@@ -247,7 +247,7 @@ exports.RuleEngine = function(definitionSet) {
     }; //filterOutCommentAndPushText
 
     const clearSplit = text => {
-        const split = text.split(definitionSet.parsing.blanskpace);
+        const split = text.split(definitionSet.parsing.blankspace);
         const reSplit = [];
         for (const part of split) {
             const word = part.trim();
