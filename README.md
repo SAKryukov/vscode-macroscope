@@ -75,5 +75,5 @@ move end-trimmed-line
 [</a></li>]
 ~~~
 
-***Spoiler:*** These are just examples. Don't do it!
+***Spoiler:*** The Markdown example is just an example. Don't do it!
 Instead, use highly comprehensive [Extensible Markdown](https://marketplace.visualstudio.com/items?itemName=sakryukov.extensible-markdown).
