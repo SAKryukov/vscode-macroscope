@@ -87,15 +87,16 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
 
     const copyToClipboard = async (textEditor, target) => {
         let range, line;
-        if (target == null)
-            return await vscode.env.clipboard.writeText(textEditor.document.getText(textEditor.selection));
+        if (target == null) //selection
+            return await vscode.env.clipboard.writeText(textEditor.document.getText(
+                new vscode.Range(textEditor.selection.start, textEditor.selection.end)));
         switch (target) {
             case languageEngine.enumerationTarget.word:
-                range = textEditor.document.getWordRangeAtPosition(textEditor.selection.start);
+                range = textEditor.document.getWordRangeAtPosition(textEditor.selection.active);
                 break;
             case languageEngine.enumerationTarget.trimmedLine:
             case languageEngine.enumerationTarget.line:
-                line = textEditor.document.lineAt(textEditor.selection.start);
+                line = textEditor.document.lineAt(textEditor.selection.active);
                 range = line?.range;
                 break;
         } //switch target
