@@ -1,5 +1,5 @@
 /*
-Macrosocope
+Macroscope
 
 Copyright (c) 2023 by Sergey A Kryukov
 https://github.com/SAKryukov/vscode-macroscope

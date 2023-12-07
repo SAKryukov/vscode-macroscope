@@ -1,5 +1,5 @@
 /*
-Macrosocope
+Macroscope
 
 Copyright (c) 2023 by Sergey A Kryukov
 https://github.com/SAKryukov/vscode-macroscope
@@ -325,12 +325,8 @@ exports.RuleEngine = function(definitionSet) {
         errors = [];
         const lines = text.split("\n");
         let count = 0;
-        try {
         for (let line of lines)
             parseLine(line, ++count);
-        } catch (ex) {
-            console.log(ex);
-        }
         this.operations = operationsCore;
         if (errors.length < 1)
             errors = null;
