@@ -23,7 +23,7 @@ exports.RuleEngine = function(definitionSet) {
     this.enumerationOperation = {
         move: 0, text: 0, copy: 0, paste: 0, select: 0, delete: 0, find: 0,
         deselect: 0, pushPosition: 0, popPosition: 0, pause: 0, return: 0,
-        pushText: 0, popText: 0,
+        pushText: 0, popText: 0, caseConversion: 0,
     }; //enumerationOperation
     this.enumerationTarget = {
         character: 0, line: 0, trimmedLine: 0, emptyLine: 0, f: 0, selection: 0,
@@ -33,15 +33,22 @@ exports.RuleEngine = function(definitionSet) {
         increment: 0, decrement: 0, start: 0, end: 0, next: 0, previous: 0,
         forward: 0, backward: 0, matchInLine: 0,
     };
+    this.enumerationCaseConversion = {
+        lower: 0, upper: 0, title: 0, camel: 0, toggle: 0,
+        members: 0, kebab: 0, snake: 0,
+        splitByCase: 0, removePunctuation: 0,
+    };
     utility.preprocessEnumeration(this.enumerationOperation);
     utility.preprocessEnumeration(this.enumerationTarget);
     utility.preprocessEnumeration(this.enumerationMove);
+    utility.preprocessEnumeration(this.enumerationCaseConversion);
 
     const MacroOperation = function(operation, target, move, value, select, index) {
         this.operation = operation; //this.enumerationOperation
         /*
         this.target = target; //this.enumerationTarget
         this.move = move; //this.enumerationMoveLocation
+        this.caseConversion =... //this.enumerationCaseConversion
         this.value = value; //number of steps or text to insert/replace
         this.select = select;
         this.index = index;
@@ -111,6 +118,18 @@ exports.RuleEngine = function(definitionSet) {
             macroOperation.target = this.enumerationTarget.trimmedLine;
         });
         map.set("pop-text", macroOperation => macroOperation.operation = this.enumerationOperation.popText);      
+        // case conversions:
+        map.set("lower-case", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.lower);
+        map.set("upper-case", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.upper);
+        map.set("title-case", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.title);
+        map.set("camel-case", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.camel);
+        map.set("toggle-case", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.toggle);
+        map.set("member-syntax", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.members);
+        map.set("kebab-case-syntax", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.kebab);
+        map.set("snake-case-syntax", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.snake);
+        map.set("path-syntax", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.path);
+        map.set("split-by-case", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.splitByCase);
+        map.set("remove-punctuation", macroOperation => macroOperation.caseConversion = this.enumerationCaseConversion.removePunctuation);
         return map;
     })(); //operationMap
 
@@ -227,7 +246,7 @@ exports.RuleEngine = function(definitionSet) {
     }; //filterOutCommentAndPushText
 
     const clearSplit = text => {
-        const split = text.split(definitionSet.parsing.blankpace);
+        const split = text.split(definitionSet.parsing.blanskpace);
         const reSplit = [];
         for (const part of split) {
             const word = part.trim();

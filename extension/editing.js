@@ -10,6 +10,8 @@ https://www.SAKryukov.org
 
 exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
 
+    const stringUtilitySet = require("./conversions").createStringUtilitySet(definitionSet);
+
     const indicatorReturn = 1, indicatorPause = 2;
     let positionStack = [], textStack = [], pause = null;
 
@@ -222,6 +224,45 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         } //loop
     }; //moveToMatchInLine
 
+    const convertCaseOrSyntax = async (textEditor, caseConversion) => {
+        if (textEditor.selection.isEmpty) return;
+        const text = textEditor.document.getText(new vscode.Range(textEditor.selection.start, textEditor.selection.end));
+        let convertedText;
+        switch (caseConversion) {
+            case languageEngine.enumerationCaseConversion.lower:
+                convertedText = text.toLowerCase();
+                break;
+            case languageEngine.enumerationCaseConversion.upper:
+                convertedText = text.toUpperCase();
+                break;
+            case languageEngine.enumerationCaseConversion.title:
+                convertedText = stringUtilitySet.titleCase(text);
+                break;
+            case languageEngine.enumerationCaseConversion.camel:
+                convertedText = stringUtilitySet.camelCase(text);
+                break;
+            case languageEngine.enumerationCaseConversion.toggle:
+                convertedText = stringUtilitySet.toggleCase(text);
+                break;
+            case languageEngine.enumerationCaseConversion.members:
+                convertedText = stringUtilitySet.programmingSyntax(text, '.');
+                break;
+            case languageEngine.enumerationCaseConversion.kebab:
+                convertedText = stringUtilitySet.programmingSyntax(text, '-');
+                break;
+            case languageEngine.enumerationCaseConversion.snake:
+                convertedText = stringUtilitySet.programmingSyntax(text, '_');
+                break;
+            case languageEngine.enumerationCaseConversion.splitByCase:
+                convertedText = stringUtilitySet.splitByCase(text);
+                break;
+            case languageEngine.enumerationCaseConversion.removePunctuation:
+                convertedText = stringUtilitySet.splitByCase(removePunctuation);
+                break;
+        }
+        await placeText(textEditor, convertedText);
+    }; //convertCaseOrSyntax
+
     const playOperation = async (textEditor, operation) => {
         if (operation.operation == languageEngine.enumerationOperation.move) {
             let verbUnit = null;
@@ -351,7 +392,10 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     return indicatorReturn;
                 case languageEngine.enumerationOperation.pause:
                     return indicatorPause;
-                } //switch non-move operation
+                default:
+                    if (operation.operation == null) // case
+                        await convertCaseOrSyntax(textEditor, operation.caseConversion);
+            } //switch non-move operation
         } //if
     }; //playOperation
 

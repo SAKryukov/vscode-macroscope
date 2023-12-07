@@ -38,12 +38,19 @@ exports.definitionSet = {
     },
     parsing: {
         empty: "",
-        blankpace: " ",
+        blankspace: " ",
         comment: "//",
         textStart: "[",
         textEnd: "]",
         text: value => value.substring(1, value.length - 1),
         select: "select",
+    },
+    typography: {
+        lineSeparator: "\n",
+        dotSeparator: ".",
+        pathSeparator: "/",
+        dashSeparator: "-",
+        underscoreSeparator: "_",
     },
     scriptPersistentStateKey: "macro.editor.start.persistent.state",
 };
