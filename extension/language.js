@@ -21,7 +21,7 @@ exports.RuleEngine = function(definitionSet) {
     }; //utility
 
     this.enumerationOperation = {
-        move: 0, text: 0, copy: 0, paste: 0, select: 0, delete: 0, find: 0,
+        move: 0, text: 0, copy: 0, paste: 0, select: 0, delete: 0, swapSelection: 0, find: 0,
         deselect: 0, pushPosition: 0, popPosition: 0, pause: 0, return: 0,
         pushText: 0, popText: 0, caseConversion: 0,
     }; //enumerationOperation
@@ -81,6 +81,7 @@ exports.RuleEngine = function(definitionSet) {
             macroOperation.target = this.enumerationTarget.line;
         });
         map.set("delete", macroOperation => macroOperation.operation = this.enumerationOperation.delete);
+        map.set("swap", macroOperation => macroOperation.operation = this.enumerationOperation.swapSelection);
         map.set("find-next", macroOperation => {
             macroOperation.operation = this.enumerationOperation.find;
             macroOperation.move = this.enumerationMove.next;

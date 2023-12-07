@@ -45,18 +45,22 @@ https://www.SAKryukov.org
                 <option value="select-word">select word</option>
                 <option value="select-line">select line</option>
                 <option>delete</option>
-                <option value="deselect-start">start</option>
-                <option value="deselect-end">end</option>    
+                <option title="Swap the position of the selection's insertion point and anchor. It is not important for manual editing, but the macro operatons depends on it.">
+                    swap</option>
+                <option value="deselect-start" title="Deselect selected text and move insertion point to the start of the selection">
+                    start</option>
+                <option value="deselect-end" title="Deselect selected text and move insertion point to the end of the selection">
+                    end</option>
             </optgroup>
-            <optgroup label="Editor Find">
+            <optgroup label="Editor Find" title="Based on the state of the Find command data entered manually before playing a script">
                 <option value="find-next">find next</option>
                 <option value="find-previous">find previous</option>    
             </optgroup>
-            <optgroup label="Position stack">
+            <optgroup label="Position stack" title="Used to save and restore insertion point positions in the document">
                 <option value="push-position">push</option>
                 <option value="pop-position">pop</option>
             </optgroup>
-            <optgroup label="Text stack">
+            <optgroup label="Text stack" title="Used to save and retrieve text data">
                 <option value="push-selection">push selection text</option>
                 <option value="push-word">push word text</option>
                 <option value="push-line">push line text</option>
@@ -70,20 +74,22 @@ https://www.SAKryukov.org
                     <option value="copy-trimmed-line">copy trimmed line</option>
                     <option>paste</option>    
                 </optgroup>
-                <optgroup label="Selection case">
+                <optgroup label="Selection case" title="Case conversions for the selected text">
                     <option value="lower-case">lower case</option>
                     <option value="upper-case">upper case</option>
                     <option value="title-case">title case</option>
                     <option value="camel-case">camel case</option>
                     <option value="toggle-case">toggle case</option>
                 </optgroup>
-                <optgroup label="Programming syntax">
-                    <option value="member-syntax">members</option>
-                    <option value="kebab-case-syntax">kebab case</option>
-                    <option value="snake-case-syntax">snake case</option>
-                    <option value="path-syntax">path</option>
-                    <option value="split-by-case">split by case</option>
-                    <option value="remove-punctuation">remove punctuation</option>
+                <optgroup label="Programming syntax" title="Case and punctuation conversions for the selected text">
+                    <option value="member-syntax" title="For example, a.b.c.d...">members</option>
+                    <option value="kebab-case-syntax" title="For example, a-b-c-d...">kebab case</option>
+                    <option value="snake-case-syntax" title="For example, a_b_c_d...">snake case</option>
+                    <option value="path-syntax" title="For example, a/b/c/d...">path</option>
+                    <option value="split-by-case" title="Splits selected text with blankspace characters inserted where the text case is changed between lower, upper and neutral case">
+                        split by case</option>
+                    <option value="remove-punctuation" title="Removes punctuation created by programming syntax from selected text">
+                        remove punctuation</option>
                 </optgroup>
                 <optgroup label="Flow control">
                 <option>pause</option>

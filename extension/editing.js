@@ -263,6 +263,11 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         await placeText(textEditor, convertedText);
     }; //convertCaseOrSyntax
 
+    const swapSelection = textEditor => {
+        if (textEditor.selection.isEmpty) return;
+        textEditor.selection = new vscode.Selection(textEditor.selection.active, textEditor.selection.anchor);
+    }; //swapSelection
+
     const playOperation = async (textEditor, operation) => {
         if (operation.operation == languageEngine.enumerationOperation.move) {
             let verbUnit = null;
@@ -354,6 +359,9 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                 case languageEngine.enumerationOperation.delete:
                     if (!textEditor.selection.isEmpty)
                         await textEditor.edit(async builder => await builder.replace(textEditor.selection, definitionSet.parsing.empty));
+                    break;
+                case languageEngine.enumerationOperation.swapSelection:
+                    swapSelection(textEditor);
                     break;
                 case languageEngine.enumerationOperation.find:
                     const backward =
