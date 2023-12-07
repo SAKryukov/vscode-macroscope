@@ -21,12 +21,12 @@ exports.RuleEngine = function(definitionSet) {
     }; //utility
 
     this.enumerationOperation = {
-        move: 0, text: 0, copy: 0, paste: 0, delete: 0, find: 0,
+        move: 0, text: 0, copy: 0, paste: 0, select: 0, delete: 0, find: 0,
         deselect: 0, pushPosition: 0, popPosition: 0, pause: 0, return: 0,
         pushText: 0, popText: 0,
     }; //enumerationOperation
     this.enumerationTarget = {
-        character: 0, line: 0, trimmedLine: 0, emptyLine: 0, word: 0, selection: 0,
+        character: 0, line: 0, trimmedLine: 0, emptyLine: 0, f: 0, selection: 0,
         forward: 0, backward: 0, // not enumerationMove.forward or .backward! used with numerationMove,matchInLine
     };
     this.enumerationMove = {
@@ -65,6 +65,14 @@ exports.RuleEngine = function(definitionSet) {
             macroOperation.target = this.enumerationTarget.trimmedLine;
         });
         map.set("paste", macroOperation => macroOperation.operation = this.enumerationOperation.paste);
+        map.set("select-word", macroOperation => {
+            macroOperation.operation = this.enumerationOperation.select;
+            macroOperation.target = this.enumerationTarget.word;
+        });
+        map.set("select-line", macroOperation => {
+            macroOperation.operation = this.enumerationOperation.select;
+            macroOperation.target = this.enumerationTarget.line;
+        });
         map.set("delete", macroOperation => macroOperation.operation = this.enumerationOperation.delete);
         map.set("find-next", macroOperation => {
             macroOperation.operation = this.enumerationOperation.find;

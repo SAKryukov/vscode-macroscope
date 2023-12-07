@@ -286,7 +286,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     case languageEngine.enumerationMove.previous:
                         moveToAnotherWord(textEditor, true, operation.value, operation.select);
                         break;
-                    } //swithch word moves not covered by cursorMove                  
+                } //swithch word moves not covered by cursorMove
             } else if (operation.move == languageEngine.enumerationMove.matchInLine) {
                 moveToMatchInLine(textEditor,
                     operation.value, operation.select,
@@ -303,6 +303,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     const text = await vscode.env.clipboard.readText();
                     if (!text) return;
                     await placeText(textEditor, text);
+                    break;
+                case languageEngine.enumerationOperation.select:
+                    const newSelectionRange = operation.target == languageEngine.enumerationTarget.word
+                        ? getWordRange(textEditor)
+                        : getLineRange(textEditor);
+                    textEditor.selection = new vscode.Selection(newSelectionRange.start, newSelectionRange.end);
                     break;
                 case languageEngine.enumerationOperation.delete:
                     if (!textEditor.selection.isEmpty)
