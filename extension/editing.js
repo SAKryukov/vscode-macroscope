@@ -131,13 +131,21 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
     }; //deselect
 
     const offset = (textEditor, value, select, backward) => {
+        const startPosition = backward ? textEditor.selection.end : textEditor.selection.start;
         const selection = textEditor.selection;
-        const startOffset = textEditor.document.offsetAt(selection.start);
+        const startOffset = textEditor.document.offsetAt(selection.active);
         if (backward) value = -value;
         let endOffset = startOffset + value;
         if (endOffset < 0) endOffset = 0;
-        const finalPosition = textEditor.document.positionAt(endOffset);
-        setSelection(textEditor, finalPosition, select, backward);
+        const previousPosition = textEditor.document.positionAt(startOffset);
+        let finalPosition = textEditor.document.positionAt(endOffset);
+        if (previousPosition.isEqual(finalPosition)) { //workaround for end of line, probably VSCode bug
+            endOffset += 2;
+            finalPosition = textEditor.document.positionAt(endOffset);
+            endOffset--;
+            finalPosition = textEditor.document.positionAt(endOffset);
+        } //if
+        textEditor.selection = new vscode.Selection(select ? startPosition : finalPosition, finalPosition);
     }; //offset
 
     const getSelectionRange = textEditor =>
