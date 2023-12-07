@@ -27,20 +27,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         await vscode.commands.executeCommand(command);
     }; //findNext
 
-    const setSelection = (textEditor, finalPosition, select, backward) =>
-        textEditor.selection = backward
-            ? new vscode.Selection(
-                select ? textEditor.selection.start : finalPosition,
-                finalPosition)
-            : new vscode.Selection(
-                finalPosition,
-                select ? textEditor.selection.start : finalPosition);
-
     const moveToWord = (textEditor, select, start) => {
-        const range = textEditor.document.getWordRangeAtPosition(textEditor.selection.start);
+        const range = textEditor.document.getWordRangeAtPosition(textEditor.selection.active);
         if (!range) return;
         const finalPosition = start ? range.start : range.end;
-        setSelection(textEditor, finalPosition, select);
+        textEditor.selection =
+            new vscode.Selection(select ? textEditor.selection.active : finalPosition, finalPosition);
     } //moveToWord
 
     const validatePosition = (document, position) => {
