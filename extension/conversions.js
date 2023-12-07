@@ -82,7 +82,7 @@ exports.createStringUtilitySet = definitionSet => {
         text.length > 0 ? text[0].toLowerCase() + text.substring(1) : text;
 
     const forEachLine = (text, converter) => {
-        const split = text.split(definitionSet.parsing.lineSeparator);
+        const split = text.split(definitionSet.typography.lineSeparator);
         const result = [];
         for (let element of split)
             result.push(converter(element.trim()))
