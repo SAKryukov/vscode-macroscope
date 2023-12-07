@@ -75,13 +75,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
     } //moveToAnotherWord
 
     const push = textEditor => {
-        positionStack.push(textEditor.selection.start);
+        positionStack.push(textEditor.selection.active);
     }; //push
-    const pop = (textEditor, select) => {
+    const pop = textEditor => {
         const position = positionStack.pop();
         if (!position) return;
-        const newStart = select ? textEditor.selection.start : position;
-        textEditor.selection = new vscode.Selection(newStart, position);
+        textEditor.selection = new vscode.Selection(position, position);
     }; //pop
 
     const setCursorMagicWords = (verb, unit) => { return { verb: verb, unit: unit }; };
@@ -326,7 +325,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     push(textEditor);
                     break;
                 case languageEngine.enumerationOperation.popPosition:
-                    pop(textEditor, operation.select);
+                    pop(textEditor);
                     break;     
                 case languageEngine.enumerationOperation.pushText:
                     switch (operation.target) {
