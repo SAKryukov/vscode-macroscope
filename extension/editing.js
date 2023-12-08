@@ -84,6 +84,12 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         if (!position) return;
         textEditor.selection = new vscode.Selection(position, position);
     }; //pop
+    const selectStackTop = textEditor => {
+        const position = positionStack.pop();
+        if (!position) return;
+        positionStack.push(position);
+        textEditor.selection = new vscode.Selection(position, textEditor.selection.active);
+    }; //selectStackTop
 
     const setCursorMagicWords = (verb, unit) => { return { verb: verb, unit: unit }; };
 
@@ -191,10 +197,11 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             result = backward ? text.lastIndexOf(pattern, position) : text.indexOf(pattern, position);
             if (result < 0)
                 return null;
+            position = result;
         } //loop
         return result;
     }; //findNthMatch
-
+    
     const moveToMatchInOneLine = (textEditor, value, select, backward, lineNumber) => {
         const line = textEditor.document.lineAt(new vscode.Position(lineNumber, 0));
         if (!line) return;
@@ -376,7 +383,9 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                     break;
                 case languageEngine.enumerationOperation.popPosition:
                     pop(textEditor);
-                    break;     
+                    break;
+                    case languageEngine.enumerationOperation.selectStackTop:
+                    selectStackTop(textEditor);
                 case languageEngine.enumerationOperation.pushText:
                     switch (operation.target) {
                         case languageEngine.enumerationTarget.selection:

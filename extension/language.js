@@ -22,7 +22,7 @@ exports.RuleEngine = function(definitionSet) {
 
     this.enumerationOperation = {
         move: 0, text: 0, copy: 0, paste: 0, select: 0, delete: 0, swapSelection: 0, find: 0,
-        deselect: 0, pushPosition: 0, popPosition: 0, pause: 0, return: 0,
+        deselect: 0, pushPosition: 0, popPosition: 0, selectStackTop: 0, pause: 0, return: 0,
         pushText: 0, popText: 0, caseConversion: 0,
     }; //enumerationOperation
     this.enumerationTarget = {
@@ -100,6 +100,7 @@ exports.RuleEngine = function(definitionSet) {
         });
         map.set("push-position", macroOperation => macroOperation.operation = this.enumerationOperation.pushPosition);
         map.set("pop-position", macroOperation => macroOperation.operation = this.enumerationOperation.popPosition);
+        map.set("select-stack-top", macroOperation => macroOperation.operation = this.enumerationOperation.selectStackTop);
         map.set("pause", macroOperation => macroOperation.operation = this.enumerationOperation.pause);
         map.set("return", macroOperation => macroOperation.operation = this.enumerationOperation.return);
         map.set("push-selection", macroOperation => {
