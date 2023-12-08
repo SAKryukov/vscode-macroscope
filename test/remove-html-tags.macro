@@ -1,0 +1,8 @@
+push-position
+move match-in-line-forward [<] 1
+push-position
+move match-in-line-forward [>] 1 select
+select-stack-top
+delete
+pop-position
+pop-position
