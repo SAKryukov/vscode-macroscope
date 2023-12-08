@@ -24,6 +24,8 @@ exports.definitionSet = {
         itemText: "Play macro",
         itemTextContinue: "Continue macro",
         itemTextNew: "Play new macro",
+        flashContinueMacroTime: 500,
+        flashContinueMacroBackground: "statusBarItem.errorBackground",
         // keep in sync with package:
         itemToolTip: "Use commands: Macroscope: Macro Editor, Macroscope: Play Macro"
     },

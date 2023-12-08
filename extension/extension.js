@@ -36,7 +36,7 @@ exports.activate = context => {
                                              // because it requires pretty stupid "priority" argument
                 statusBarItem.text = definitionSet.statusBar.itemText;
                 statusBarItem.tooltip = definitionSet.statusBar.itemToolTip;
-                statusBarItem.command = definitionSet.commands.macroPlay;                                         
+                statusBarItem.command = definitionSet.commands.macroPlay;
         } //if
         if (isVisible)
             statusBarItem.show();
@@ -54,11 +54,20 @@ exports.activate = context => {
     context.subscriptions.push(vscode.commands.registerTextEditorCommand(
         definitionSet.commands.macroPlay,
         textEditor => {
-            textProcessor.play(textEditor, macro).then(isPaused =>
+          const isVisible = vscode.window.activeTextEditor != null && macro != null;
+          if (!isVisible) return;
+            textProcessor.play(textEditor, macro).then(isPaused => {
                 statusBarItem.text = isPaused
-                ? definitionSet.statusBar.itemTextContinue
-                : definitionSet.statusBar.itemText
-            );
+                    ? definitionSet.statusBar.itemTextContinue
+                    : definitionSet.statusBar.itemText;
+                if (isPaused) { //flash:
+                    statusBarItem.backgroundColor = 
+                        new vscode.ThemeColor(definitionSet.statusBar.flashContinueMacroBackground);
+                    setTimeout(() => {
+                        statusBarItem.backgroundColor = null;
+                    }, definitionSet.statusBar.flashContinueMacroTime);
+                } //if Paused
+            });
         })); //macro Play command
         
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
