@@ -23,6 +23,8 @@ Macroscope, a VSCode Macro Engine, is a Visual Studio Code Extension used to cre
 
 ### Examples:
 
+[Available macro script samples](https://github.com/SAKryukov/vscode-macroscope/tree/main/test)
+
 This simple script cleans the lines off trailing whitespace characters:
 ~~~
 move end-line

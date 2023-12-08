@@ -1,0 +1,23 @@
+// Debug a macro with pause:
+// Use pause, watch the changes
+// and play macro from the next line
+// using Continue macro
+
+push-position
+move match-in-line-forward [$$$] 1 select
+pause
+delete
+pop-position
+push-position
+
+move match-in-line-forward [###] 1 select
+pause
+delete
+pop-position
+push-position
+
+move match-in-line-forward [===] 1 select
+pause
+delete
+pop-position
+push-position
