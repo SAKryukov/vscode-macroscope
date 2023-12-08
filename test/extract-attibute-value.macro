@@ -1,0 +1,18 @@
+// extract attribute value and put data on top, in this example, the attribite label
+// Find should be manually set to find ""
+
+push-position
+move match-in-line-forward [label="] 1 select
+deselect-end
+push-position
+find-next
+deselect-start
+select-stack-top
+copy
+delete
+move previous-word 1 select
+delete
+pop-position
+pop-position
+paste
+[\n]

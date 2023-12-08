@@ -1,3 +1,4 @@
+    <header>
         <button id="build-macro">Build Macro</button>
         <select id="action">
             <option selected="true">move</option>
@@ -7,11 +8,11 @@
                 <option value="select-word">select word</option>
                 <option value="select-line">select line</option>
                 <option>delete</option>
-                <option title="Swap the position of the selection's insertion point and anchor. It is not important for manual editing, but the macro operatons depends on it.">
+                <option title="Swap the position of the selection's insertion point and anchor. It is not important for manual editing, but the macro operations depend on it.">
                     swap</option>
-                <option value="deselect-start" title="Deselect selected text and move insertion point to the start of the selection">
+                <option value="deselect-start" title="Deselect selected text and move the insertion point to the start of the selection">
                     start</option>
-                <option value="deselect-end" title="Deselect selected text and move insertion point to the end of the selection">
+                <option value="deselect-end" title="Deselect selected text and move the insertion point to the end of the selection">
                     end</option>
             </optgroup>
             <optgroup label="Editor Find" title="Based on the state of the Find command data entered manually before playing a script">
@@ -21,6 +22,7 @@
             <optgroup label="Position stack" title="Used to save and restore insertion point positions in the document">
                 <option value="push-position">push</option>
                 <option value="pop-position">pop</option>
+                <option value="select-stack-top" title="set selection between position stack top and the currect insertion point">select stack top</option>
             </optgroup>
             <optgroup label="Text stack" title="Used to save and retrieve text data">
                 <option value="push-selection">push selection text</option>
@@ -48,7 +50,7 @@
                     <option value="kebab-case-syntax" title="For example, a-b-c-d...">kebab case</option>
                     <option value="snake-case-syntax" title="For example, a_b_c_d...">snake case</option>
                     <option value="path-syntax" title="For example, a/b/c/d...">path</option>
-                    <option value="split-by-case" title="Splits selected text with blankspace characters inserted where the text case is changed between lower, upper and neutral case">
+                    <option value="split-by-case" title="Splits selected text with blank space characters inserted where the text case is changed between lower, upper, and neutral case">
                         split by case</option>
                     <option value="remove-punctuation" title="Removes punctuation created by programming syntax from selected text">
                         remove punctuation</option>
@@ -89,3 +91,4 @@
         <input id="value" type="text" value="1" />
         <label><input id="select" type="checkbox"> Select</label>
         <button id="add">Add</button>
+    </header>
