@@ -5,7 +5,7 @@ deselect-end
 push-position
 move match-in-line-next ["] select
 copy
-move previous-word 1 select
+move start-line select
 delete
 pop-position
 pop-position
