@@ -19,7 +19,7 @@ https://www.SAKryukov.org
         body { display: flex; flex-direction: column; }
         main { flex: auto; background-color: snow; overflow: auto; }
         header { background-color: gainsboro; border-bottom: thin solid gray; }
-        header { display: flex; flex-direction: row; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+        header { display: flex; flex-direction: row; align-items:center; justify-content: flex-end; flex-wrap: wrap; }
         label { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; }
         button, label, footer { white-space: nowrap; }
         footer { background-color:bisque; border-top: thin solid brown; }
@@ -32,7 +32,9 @@ https://www.SAKryukov.org
         option { color: black; background-color: white; }
         input[type=text] { width: 2em; padding-left: 0.1em; padding-right: 0.1em; }
         button:focus, select:focus, input:focus { outline: solid 3.2px gray; border-radius: 3px; }
-        button {border: thin solid gray; }
+        button { border: thin solid gray; }
+        button:hover { background-color: rgb(218, 231, 239); }
+        button:active { background-color: darkgray; color: snow; }
         input[type=checkbox]:focus { outline-offset: 1px; }
     </style>
 </head>
