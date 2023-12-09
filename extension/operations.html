@@ -30,7 +30,10 @@ https://www.SAKryukov.org
         button { padding-top: 2px; padding-bottom: 0px; }
         optgroup { color: purple; background-color:hsl(214, 41%, 92%); }
         option { color: black; background-color: white; }
-        input[type=text] { width: 2em; }
+        input[type=text] { width: 2em; padding-left: 0.1em; padding-right: 0.1em; }
+        button:focus, select:focus, input:focus { outline: solid 3.2px gray; border-radius: 3px; }
+        button {border: thin solid gray; }
+        input[type=checkbox]:focus { outline-offset: 1px; }
     </style>
 </head>
 
@@ -128,7 +131,7 @@ https://www.SAKryukov.org
             </optgroup>
         </select>
         <input id="value" type="text" value="1" />
-        <label><input id="select" type="checkbox"> Select</label>
+        <label><input id="select" type="checkbox">&thinsp;Select</label>
         <button id="add">Add</button>
     </header>
     <main>
@@ -165,7 +168,7 @@ https://www.SAKryukov.org
                     control.disabled = event.target.selectedIndex != 0;
             }; //selectAction.onchange
             editValue.onkeydown = event => {
-                if (!valueFilter.has(event.key) && event.key != "Backspace")
+                if (!valueFilter.has(event.key) && event.key != "Backspace" && event.key != "Tab")
                     event.preventDefault();
             }; //editValue.onkeydown
             const add = () => {
