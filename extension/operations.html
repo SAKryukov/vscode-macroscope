@@ -123,6 +123,8 @@ https://www.SAKryukov.org
             <optgroup label="Search">
                 <option value="match-in-line-forward">match in line, forward</up></option>
                 <option value="match-in-line-backward">match in line, backward</option>    
+                <option value="match-in-line-next">match in line, next</up></option>
+                <option value="match-in-line-previous">match in line, previous</option>    
             </optgroup>
         </select>
         <input id="value" type="text" value="1" />
@@ -141,7 +143,9 @@ https://www.SAKryukov.org
             const vscode = typeof acquireVsCodeApi == typeof undefined ?
                 null : acquireVsCodeApi();
             const moveAction = new Set(["move"]);
-            const moveMatchInLine = new Set(["match-in-line-forward", "match-in-line-backward"]); 
+            const moveMatchInLine = new Set([
+                "match-in-line-forward", "match-in-line-backward",
+                "match-in-line-next", "match-in-line-previous"]); 
             const valueMove = new Set(
                 ["left", "right", "up", "down", "next", "previous", "forward", "backward",
                 "next-word", "previous-word", "next-empty-line", "previous-empty-line",

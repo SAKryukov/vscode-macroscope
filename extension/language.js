@@ -27,7 +27,8 @@ exports.RuleEngine = function(definitionSet) {
     }; //enumerationOperation
     this.enumerationTarget = {
         character: 0, line: 0, trimmedLine: 0, emptyLine: 0, f: 0, selection: 0,
-        forward: 0, backward: 0, // not enumerationMove.forward or .backward! used with numerationMove,matchInLine
+        // not enumerationMove.forward, .backward, .next or .previous! used with numerationMove.matchInLine
+        forward: 0, backward: 0, next: 0, previous: 0, 
     };
     this.enumerationMove = {
         increment: 0, decrement: 0, start: 0, end: 0, next: 0, previous: 0,
@@ -212,6 +213,16 @@ exports.RuleEngine = function(definitionSet) {
         });
         map.set("match-in-line-backward", macroOperation => {
             macroOperation.target = this.enumerationTarget.backward;
+            macroOperation.move = this.enumerationMove.matchInLine;
+            return true; //indicates special parsing for matchInLine
+        });
+        map.set("match-in-line-next", macroOperation => {
+            macroOperation.target = this.enumerationTarget.next;
+            macroOperation.move = this.enumerationMove.matchInLine;
+            return true; //indicates special parsing for matchInLine
+        });
+        map.set("match-in-line-previous", macroOperation => {
+            macroOperation.target = this.enumerationTarget.previous;
             macroOperation.move = this.enumerationMove.matchInLine;
             return true; //indicates special parsing for matchInLine
         });

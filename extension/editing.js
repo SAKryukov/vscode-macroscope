@@ -219,7 +219,30 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         return true;
     }; //moveToMatchInOneLine
 
-    const moveToMatchInLine = (textEditor, value, select, backward) => {
+    const moveToMatchInLineNextPrevious = (textEditor, value, select, isNext) => {
+        const active = textEditor.selection.active;
+        const line = textEditor.document.lineAt(active);
+        const offsetActive = textEditor.document.offsetAt(active);
+        const lineOffsetStart = textEditor.document.offsetAt(line.range.start);
+        const subLine = isNext
+            ? line.text.substring(offsetActive - lineOffsetStart)
+            : line.text.substring(0, offsetActive - lineOffsetStart);
+        const foundOffset = isNext
+            ? subLine.indexOf(value.text)
+            : subLine.lastIndexOf(value.text);
+        const finalOffset = isNext
+            ? offsetActive + foundOffset
+            : lineOffsetStart + foundOffset;
+        const finalPosition = textEditor.document.positionAt(finalOffset);
+        textEditor.selection = new vscode.Selection(select ? active : finalPosition, finalPosition);
+    } //moveToMatchInLineNextPrevious
+
+    const moveToMatchInLine = (textEditor, value, select, operation) => {
+        const next = operation == languageEngine.enumerationTarget.next;
+        const previous = operation == languageEngine.enumerationTarget.previous;
+        if (next || previous) 
+            return moveToMatchInLineNextPrevious(textEditor, value, select, next);
+        const backward = operation == languageEngine.enumerationTarget.backward;
         let lineNumber = textEditor.document.lineAt(textEditor.selection.active).range.start.line;
         const increment = backward ? -1 : 1;
         while (lineNumber >= 0) {
@@ -343,7 +366,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             } else if (operation.move == languageEngine.enumerationMove.matchInLine) {
                 moveToMatchInLine(textEditor,
                     operation.value, operation.select,
-                    operation.target == languageEngine.enumerationTarget.backward);
+                    operation.target);
             } //if
         } else {
             switch (operation.operation) { //non move:

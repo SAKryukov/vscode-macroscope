@@ -1,94 +1,17 @@
-    <header>
-        <button id="build-macro">Build Macro</button>
-        <select id="action">
-            <option selected="true">move</option>
-            <option value="[]">text</option>
-            <option value="//">comment</option>
-            <optgroup label="Selection">
-                <option value="select-word">select word</option>
-                <option value="select-line">select line</option>
-                <option>delete</option>
-                <option title="Swap the position of the selection's insertion point and anchor. It is not important for manual editing, but the macro operations depend on it.">
-                    swap</option>
-                <option value="deselect-start" title="Deselect selected text and move the insertion point to the start of the selection">
-                    start</option>
-                <option value="deselect-end" title="Deselect selected text and move the insertion point to the end of the selection">
-                    end</option>
-            </optgroup>
-            <optgroup label="Editor Find" title="Based on the state of the Find command data entered manually before playing a script">
-                <option value="find-next">find next</option>
-                <option value="find-previous">find previous</option>    
-            </optgroup>
-            <optgroup label="Position stack" title="Used to save and restore insertion point positions in the document">
-                <option value="push-position">push</option>
-                <option value="pop-position">pop</option>
-                <option value="select-stack-top" title="set selection between position stack top and the currect insertion point">select stack top</option>
-            </optgroup>
-            <optgroup label="Text stack" title="Used to save and retrieve text data">
-                <option value="push-selection">push selection text</option>
-                <option value="push-word">push word text</option>
-                <option value="push-line">push line text</option>
-                <option value="push-trimmed-line">push trimmed line text</option>
-                <option value="pop-text">pop</option>
-                </optgroup>
-                <optgroup label="Clipboard">
-                    <option value="copy">copy selection</option>
-                    <option value="copy-word">copy word</option>
-                    <option value="copy-line">copy line</option>
-                    <option value="copy-trimmed-line">copy trimmed line</option>
-                    <option>paste</option>    
-                </optgroup>
-                <optgroup label="Selection case" title="Case conversions for the selected text">
-                    <option value="lower-case">lower case</option>
-                    <option value="upper-case">upper case</option>
-                    <option value="title-case">title case</option>
-                    <option value="camel-case">camel case</option>
-                    <option value="toggle-case">toggle case</option>
-                </optgroup>
-                <optgroup label="Programming syntax" title="Case and punctuation conversions for the selected text">
-                    <option value="member-syntax" title="For example, a.b.c.d...">members</option>
-                    <option value="kebab-case-syntax" title="For example, a-b-c-d...">kebab case</option>
-                    <option value="snake-case-syntax" title="For example, a_b_c_d...">snake case</option>
-                    <option value="path-syntax" title="For example, a/b/c/d...">path</option>
-                    <option value="split-by-case" title="Splits selected text with blank space characters inserted where the text case is changed between lower, upper, and neutral case">
-                        split by case</option>
-                    <option value="remove-punctuation" title="Removes punctuation created by programming syntax from selected text">
-                        remove punctuation</option>
-                </optgroup>
-                <optgroup label="Flow control">
-                <option>pause</option>
-                <option>return</option>    
-            </optgroup>
-        </select>
-        <select id="move">
-            <option>left</option>
-            <option selected="true">right</option>
-            <option>up</option>
-            <option>down</option>
-            <optgroup label="Global">
-                <option>forward</option>
-                <option>backward</option>    
-                </optgroup>
-            <optgroup label="Context">
-                <option value="word-start">start of word</option>
-                <option value="word-end">end of word</option>
-                <option value="start-line">start of line</option>
-                <option value="end-line">end of line</option>
-                <option value="start-trimmed-line">start of trimmed line</option>
-                <option value="end-trimmed-line">end of trimmed line</option>
-            </optgroup>
-            <optgroup label="Order">
-                <option value="next-word">next word</option>
-                <option value="previous-word">previous word</option>
-                <option value="next-empty-line">next empty line</option>
-                <option value="previous-empty-line">previous empty line</option>    
-            </optgroup>
-            <optgroup label="Search">
-                <option value="match-in-line-forward">match in line, forward</up></option>
-                <option value="match-in-line-backward">match in line, backward</option>    
-            </optgroup>
-        </select>
-        <input id="value" type="text" value="1" />
-        <label><input id="select" type="checkbox"> Select</label>
-        <button id="add">Add</button>
-    </header>
+
+lower case
+upper case
+title case
+camel case
+toggle case
+
+[SA](https://www.SAKryukov.org)
+[GitHub](https://www.GitHub.com)
+
+
+         [SA](https://www.SAKryukov.org)
+                 [GitHub](https://www.GitHub.com)
+                            [SA](https://www.SAKryukov.org)
+
+  [GitHub](https://www.GitHub.com)
+
