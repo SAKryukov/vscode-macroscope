@@ -372,6 +372,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
             switch (operation.operation) { //non move:
                 case languageEngine.enumerationOperation.text:
                     await placeText(textEditor, definitionSet.parsing.unescape(operation.value));
+                    break;
                 case languageEngine.enumerationOperation.copy:
                     await copyToClipboard(textEditor, operation.target);
                     break;

@@ -47,8 +47,13 @@ exports.definitionSet = {
         text: value => value.substring(1, value.length - 1),
         select: "select",
         unescape: text => text
+            .replaceAll("\\\\n", "\0x01")
+            .replaceAll("\\\\t", "\0x02")
+            .replaceAll("\\\\", "\\")
             .replaceAll("\\n", "\n")
-            .replaceAll("\\t", "\t"),
+            .replaceAll("\\t", "\t")
+            .replaceAll("\0x01", "\\n")
+            .replaceAll("\0x02", "\\t")
     },
     typography: {
         lineSeparator: "\n",
