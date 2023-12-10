@@ -75,9 +75,10 @@ exports.activate = context => {
         if (macroEditor == null)
             result.push(definitionSet.macroEditor.choiceShow);
         const editor = vscode.window.activeTextEditor;
+        if (macroEditor != null)
+            result.push(definitionSet.macroEditor.choiceEditorToText);
         if (!editor)
             return result;
-        result.push(definitionSet.macroEditor.choiceEditorToText);
         if (editor.document.getText().trim().length > 0)
             result.push(definitionSet.macroEditor.choiceTextToMacro);
         if (!editor.selection.isEmpty) {
@@ -86,9 +87,32 @@ exports.activate = context => {
         } //if
         return result;
     } //editorMenu
+    
+    const showEditorMacroHtml = useSelection => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor)
+            return;
+        const text = useSelection
+            ? editor.document.getText(editor.selection).trim()
+            : editor.document.getText().trim();
+        const split = text.split(definitionSet.typography.lineSeparator);
+        let result = [];
+        for (const line of split)
+            result.push(definitionSet.macroEditor.lineToHtml(line));
+        return result.join("");
+    }; //showEditorMacroHtml
 
     const showEditor = macroHtml => {
-        if (macroEditor != null) return; //SA??? make state
+        const pushMacroHtml = () => {
+            if (!macroHtml)
+                macroHtml = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
+            if (macroHtml)
+                macroEditor.webview.postMessage({ innerHTML: macroHtml });
+        } // pushMacroHtml
+        if (macroEditor != null) {
+            pushMacroHtml();
+            return;
+        } //if
         macroEditor = vscode.window.createWebviewPanel(
             definitionSet.macroEditor.name,
             definitionSet.macroEditor.title,
@@ -111,10 +135,7 @@ exports.activate = context => {
             } //if
             updateMacroPlayVisibility();
         }, undefined, context.subscriptions);
-        if (!macroHtml)
-            macroHtml = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
-        if (macroHtml)
-            macroEditor.webview.postMessage({ innerHTML: macroHtml });
+        pushMacroHtml();
     }; //showEditor
 
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
@@ -131,10 +152,10 @@ exports.activate = context => {
                     //SA???
                     break;
                 case definitionSet.macroEditor.choiceTextToMacro:
-                    showEditor("move left");
+                    showEditor(showEditorMacroHtml());
                     break;
                 case definitionSet.macroEditor.choiceSelectionToMacro:
-                    showEditor("move right");
+                    showEditor(showEditorMacroHtml(true));
                     break;
             } //switch choice
         }); //showQuickick 

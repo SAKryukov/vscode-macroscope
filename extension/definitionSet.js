@@ -38,6 +38,7 @@ exports.definitionSet = {
         choiceTextToMacro: "Text to macro script",
         choiceSelectionToMacro: "Selection to macro script",
         htmlFileName: () => __dirname + "/operations.html",
+        lineToHtml: line => `<p>${line}</p>`,
     },
     value: {
         default: 1,
