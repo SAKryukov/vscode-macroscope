@@ -32,6 +32,11 @@ exports.definitionSet = {
     macroEditor: {
         name: "macro.editor",
         title: "Macroscope Macro Editor",
+        quickPickTitle: "Macro Editor",
+        choiceShow: "Show",
+        choiceEditorToText: "Macro script to text",
+        choiceTextToMacro: "Text to macro script",
+        choiceSelectionToMacro: "Selection to macro script",
         htmlFileName: () => __dirname + "/operations.html",
     },
     value: {

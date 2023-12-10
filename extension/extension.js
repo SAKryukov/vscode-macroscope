@@ -70,34 +70,75 @@ exports.activate = context => {
             });
         })); //macro Play command
         
+    const editorMenu = () => {
+        const result = [];
+        if (macroEditor == null)
+            result.push(definitionSet.macroEditor.choiceShow);
+        const editor = vscode.window.activeTextEditor;
+        if (!editor)
+            return result;
+        result.push(definitionSet.macroEditor.choiceEditorToText);
+        if (editor.document.getText().trim().length > 0)
+            result.push(definitionSet.macroEditor.choiceTextToMacro);
+        if (!editor.selection.isEmpty) {
+            if (editor.document.getText(editor.selection).trim().length > 0)
+            result.push(definitionSet.macroEditor.choiceSelectionToMacro);
+        } //if
+        return result;
+    } //editorMenu
+
+    const showEditor = macroHtml => {
+        if (macroEditor != null) return; //SA??? make state
+        macroEditor = vscode.window.createWebviewPanel(
+            definitionSet.macroEditor.name,
+            definitionSet.macroEditor.title,
+            vscode.ViewColumn.Two,
+            { enableScripts: true }
+        ); //panel
+        macroEditor.onDidDispose(() => macroEditor = null);
+        macroEditor.webview.html = fileSystem.readFileSync(
+            definitionSet.macroEditor.htmlFileName()).toString()
+            .replace("?product?", metadata.extensionDisplayName)
+            .replace("?version?", metadata.version);
+        macroEditor.webview.onDidReceiveMessage(message => {
+            context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.innerHTML);
+            const errors = languageEngine.parse(message.macro.text);
+            macroEditor.webview.postMessage({ errors: errors });
+            if (errors == null) {
+                textProcessor.resetPause();
+                macro = languageEngine.operations;
+                statusBarItem.text = definitionSet.statusBar.itemTextNew;
+            } //if
+            updateMacroPlayVisibility();
+        }, undefined, context.subscriptions);
+        if (!macroHtml)
+            macroHtml = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
+        if (macroHtml)
+            macroEditor.webview.postMessage({ innerHTML: macroHtml });
+    }; //showEditor
+
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
-            if (macroEditor != null) return; //SA??? make state
-            macroEditor = vscode.window.createWebviewPanel(
-                definitionSet.macroEditor.name,
-                definitionSet.macroEditor.title,
-                vscode.ViewColumn.Two,
-                { enableScripts: true }
-            ); //panel
-            macroEditor.onDidDispose(() => macroEditor = null);
-            macroEditor.webview.html = fileSystem.readFileSync(
-                definitionSet.macroEditor.htmlFileName()).toString()
-                    .replace("?product?", metadata.extensionDisplayName)
-                    .replace("?version?", metadata.version);
-            macroEditor.webview.onDidReceiveMessage(message => {
-                context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.innerHTML);
-                const errors = languageEngine.parse(message.macro.text);
-                macroEditor.webview.postMessage({ errors: errors });
-                if (errors == null) {
-                    textProcessor.resetPause();
-                    macro = languageEngine.operations;
-                    statusBarItem.text = definitionSet.statusBar.itemTextNew;
-                } //if
-                updateMacroPlayVisibility();
-            }, undefined, context.subscriptions);
-            const persistentMacro = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
-            if (persistentMacro)
-                macroEditor.webview.postMessage({ innerHTML: persistentMacro });
-        })); //macroEditor command
+        const choiceSet = editorMenu();
+        vscode.window.showQuickPick(choiceSet, {
+            placeHolder: definitionSet.macroEditor.choiceShow,
+            canPickMany: false
+        }).then(choice => {
+            switch (choice) {
+                case definitionSet.macroEditor.choiceShow:
+                    showEditor(null);
+                    break;
+                case definitionSet.macroEditor.choiceEditorToText:
+                    //SA???
+                    break;
+                case definitionSet.macroEditor.choiceTextToMacro:
+                    showEditor("move left");
+                    break;
+                case definitionSet.macroEditor.choiceSelectionToMacro:
+                    showEditor("move right");
+                    break;
+            } //switch choice
+        }); //showQuickick 
+    })); //macroEditor command
 
 }; //exports.activate
 
