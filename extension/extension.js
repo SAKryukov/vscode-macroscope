@@ -99,7 +99,7 @@ exports.activate = context => {
         let result = [];
         for (const line of split)
             result.push(definitionSet.macroEditor.lineToHtml(line));
-        return result.join("");
+        return result.join(definitionSet.parsing.empty);
     }; //showEditorMacroHtml
 
     const showEditor = macroHtml => {
