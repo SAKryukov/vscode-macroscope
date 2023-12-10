@@ -102,6 +102,12 @@ exports.activate = context => {
         return result.join(definitionSet.parsing.empty);
     }; //showEditorMacroHtml
 
+    const addMacroToText = text => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) return;
+        textProcessor.placeText(editor, text);
+    }; //addMacroToText
+
     const showEditor = macroHtml => {
         const pushMacroHtml = () => {
             if (!macroHtml)
@@ -125,14 +131,18 @@ exports.activate = context => {
             .replace("?product?", metadata.extensionDisplayName)
             .replace("?version?", metadata.version);
         macroEditor.webview.onDidReceiveMessage(message => {
-            context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.innerHTML);
-            const errors = languageEngine.parse(message.macro.text);
-            macroEditor.webview.postMessage({ errors: errors });
-            if (errors == null) {
-                textProcessor.resetPause();
-                macro = languageEngine.operations;
-                statusBarItem.text = definitionSet.statusBar.itemTextNew;
-            } //if
+            if (message.macro.onRequest) {
+                addMacroToText(message.macro.text);
+            } else {
+                context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.innerHTML);
+                const errors = languageEngine.parse(message.macro.text);
+                macroEditor.webview.postMessage({ errors: errors });
+                if (errors == null) {
+                    textProcessor.resetPause();
+                    macro = languageEngine.operations;
+                    statusBarItem.text = definitionSet.statusBar.itemTextNew;
+                } //if    
+            } //if on request
             updateMacroPlayVisibility();
         }, undefined, context.subscriptions);
         pushMacroHtml();
@@ -141,7 +151,7 @@ exports.activate = context => {
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
         const choiceSet = editorMenu();
         vscode.window.showQuickPick(choiceSet, {
-            placeHolder: definitionSet.macroEditor.choiceShow,
+            placeHolder: definitionSet.macroEditor.quickPickTitle,
             canPickMany: false
         }).then(choice => {
             switch (choice) {
@@ -149,7 +159,7 @@ exports.activate = context => {
                     showEditor(null);
                     break;
                 case definitionSet.macroEditor.choiceEditorToText:
-                    //SA???
+                    macroEditor.webview.postMessage({ request: true });
                     break;
                 case definitionSet.macroEditor.choiceTextToMacro:
                     showEditor(showEditorMacroHtml());

@@ -172,7 +172,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         textStack.push(textEditor.document.getText(range));
     }; //pushText
 
-    const placeText = async (textEditor, text) => {
+    this.placeText = async (textEditor, text) => {
         if (textEditor.selection.isEmpty)
             await textEditor.edit(async builder => await builder.insert(textEditor.selection.active, text));
         else
@@ -182,7 +182,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
     const popText = async textEditor => {
         const text = textStack.pop();
         if (!text) return;
-        await placeText(textEditor, text);
+        await this.placeText(textEditor, text);
     }; //popText
 
     const findNthMatch = (text, pattern, backward, count) => {
@@ -290,7 +290,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                 convertedText = stringUtilitySet.splitByCase(removePunctuation);
                 break;
         }
-        await placeText(textEditor, convertedText);
+        await this.placeText(textEditor, convertedText);
     }; //convertCaseOrSyntax
 
     const swapSelection = textEditor => {
@@ -371,7 +371,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
         } else {
             switch (operation.operation) { //non move:
                 case languageEngine.enumerationOperation.text:
-                    await placeText(textEditor, definitionSet.parsing.unescape(operation.value));
+                    await this.placeText(textEditor, definitionSet.parsing.unescape(operation.value));
                     break;
                 case languageEngine.enumerationOperation.copy:
                     await copyToClipboard(textEditor, operation.target);
@@ -379,7 +379,7 @@ exports.TextProcessor = function (vscode, definitionSet, languageEngine) {
                 case languageEngine.enumerationOperation.paste:
                     const text = await vscode.env.clipboard.readText();
                     if (!text) return;
-                    await placeText(textEditor, text);
+                    await this.placeText(textEditor, text);
                     break;
                 case languageEngine.enumerationOperation.select:
                     const newSelectionRange = operation.target == languageEngine.enumerationTarget.word

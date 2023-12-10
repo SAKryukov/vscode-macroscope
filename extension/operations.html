@@ -204,13 +204,14 @@ https://www.SAKryukov.org
                         : getTextContent(element);
                 return macro;
             }; //getTextContent
-            const build = () => {
+            const build = onRequest => {
                 let macro = getTextContent(content);
                 content.setAttribute("contenteditable", "false");
                 vscode?.postMessage({
                     macro: {
                         text: macro,
                         innerHTML: content.innerHTML,
+                        onRequest: onRequest,
                     },
                 })
                 setTimeout(() => content.setAttribute("contenteditable", "true"));
@@ -239,6 +240,8 @@ https://www.SAKryukov.org
                 else if (event.data.innerHTML) {
                     content.innerHTML = event.data.innerHTML;
                     build();
+                } else if (event.data.request) {
+                    build(event.data.request);
                 } //if
             }; //window.onmessage
             selectAction.focus();
