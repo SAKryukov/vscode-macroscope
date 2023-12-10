@@ -196,10 +196,16 @@ https://www.SAKryukov.org
                     if (event.key == "Enter")
                         add();
                 } //control.onkeydown
-            const build = () => {
+            const getTextContent = parent => {
                 let macro = "";
-                for (const element of content.childNodes)
-                    macro += element.textContent + "\n";
+                for (const element of parent.childNodes)
+                    macro += element.constructor == Text
+                        ? element.textContent + "\n"
+                        : getTextContent(element);
+                return macro;
+            }; //getTextContent
+            const build = () => {
+                let macro = getTextContent(content);
                 content.setAttribute("contenteditable", "false");
                 vscode?.postMessage({
                     macro: {
