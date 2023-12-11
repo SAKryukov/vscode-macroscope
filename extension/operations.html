@@ -212,17 +212,26 @@ https://www.SAKryukov.org
                 vscode?.postMessage({
                     macro: {
                         text: macro,
-                        innerHTML: content.innerHTML,
                         onRequest: onRequest,
                     },
                 })
                 setTimeout(() => content.setAttribute("contenteditable", "true"));
             }; //build
+            const populateHtml = (content, text) => {
+                content.innerHTML = "";
+                const split = text.split("\n");
+                for (const line of split) {
+                    const text = document.createTextNode(line);
+                    const newLine = document.createElement("br"); 
+                    content.appendChild(text);
+                    content.appendChild(newLine);
+                } //loop
+            }; //populateHtml
             buttonBuild.onclick = build;
             const preservePersistentMacro = event => {
                 vscode?.postMessage({
                     macro: {
-                        innerHTML: content.innerHTML,
+                        text: getTextContent(content),
                     },
                 });
             } //preservePersistentMacro
@@ -239,8 +248,8 @@ https://www.SAKryukov.org
                         errors.appendChild(p);
                         p.scrollIntoView({ block: "end" });
                     } //loop
-                else if (event.data.innerHTML) {
-                    content.innerHTML = event.data.innerHTML;
+                else if (event.data.text) {
+                    populateHtml(content, event.data.text);
                     build();
                 } else if (event.data.request) {
                     build(event.data.request);

@@ -87,15 +87,15 @@ exports.activate = context => {
         return result;
     } //editorMenu
     
-    const macroTextToHtml = useSelection => {
+    const extractMacroText = useSelection => {
         const editor = vscode.window.activeTextEditor;
         if (!editor)
             return;
         const text = useSelection
             ? editor.document.getText(editor.selection).trim()
             : editor.document.getText().trim();
-        return text.replaceAll(definitionSet.typography.lineSeparator, definitionSet.macroEditor.newLine).trim();
-    }; //macroTextToHtml
+        return text;
+    }; //extractMacroText
 
     const addMacroToText = text => {
         const editor = vscode.window.activeTextEditor;
@@ -103,14 +103,14 @@ exports.activate = context => {
         textProcessor.placeText(editor, text);
     }; //addMacroToText
 
-    const showEditor = macroHtml => {
+    const showEditor = macroText => {
         if (macroEditor != null)
             macroEditor.reveal();
         const pushMacroHtml = () => {
-            if (!macroHtml)
-                macroHtml = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
-            if (macroHtml)
-                macroEditor.webview.postMessage({ innerHTML: macroHtml });
+            if (!macroText)
+                macroText = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
+            if (macroText)
+                macroEditor.webview.postMessage({ text: macroText });
         } // pushMacroHtml
         if (macroEditor != null) {
             pushMacroHtml();
@@ -131,7 +131,7 @@ exports.activate = context => {
             if (message.macro.onRequest) {
                 addMacroToText(message.macro.text);
             } else {
-                context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.innerHTML);
+                context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.text);
                 const errors = languageEngine.parse(message.macro.text);
                 macroEditor.webview.postMessage({ errors: errors });
                 if (errors == null) {
@@ -159,10 +159,10 @@ exports.activate = context => {
                     macroEditor.webview.postMessage({ request: true });
                     break;
                 case definitionSet.macroEditor.choiceTextToMacro:
-                    showEditor(macroTextToHtml());
+                    showEditor(extractMacroText());
                     break;
                 case definitionSet.macroEditor.choiceSelectionToMacro:
-                    showEditor(macroTextToHtml(true));
+                    showEditor(extractMacroText(true));
                     break;
             } //switch choice
         }); //showQuickick 
