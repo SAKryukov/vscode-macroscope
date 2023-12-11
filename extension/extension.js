@@ -72,13 +72,12 @@ exports.activate = context => {
         
     const editorMenu = () => {
         const result = [];
-        if (macroEditor == null)
-            result.push(definitionSet.macroEditor.choiceShow);
+        result.push(definitionSet.macroEditor.choiceShow);
         const editor = vscode.window.activeTextEditor;
-        if (macroEditor != null)
-            result.push(definitionSet.macroEditor.choiceEditorToText);
         if (!editor)
             return result;
+        if (macroEditor != null)
+            result.push(definitionSet.macroEditor.choiceEditorToText);
         if (editor.document.getText().trim().length > 0)
             result.push(definitionSet.macroEditor.choiceTextToMacro);
         if (!editor.selection.isEmpty) {
@@ -109,6 +108,10 @@ exports.activate = context => {
     }; //addMacroToText
 
     const showEditor = macroHtml => {
+        if (macroEditor != null) {
+            macroEditor.reveal();
+            return;
+        } //if
         const pushMacroHtml = () => {
             if (!macroHtml)
                 macroHtml = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
