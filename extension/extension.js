@@ -87,19 +87,15 @@ exports.activate = context => {
         return result;
     } //editorMenu
     
-    const showEditorMacroHtml = useSelection => {
+    const macroTextToHtml = useSelection => {
         const editor = vscode.window.activeTextEditor;
         if (!editor)
             return;
         const text = useSelection
             ? editor.document.getText(editor.selection).trim()
             : editor.document.getText().trim();
-        const split = text.split(definitionSet.typography.lineSeparator);
-        let result = [];
-        for (const line of split)
-            result.push(definitionSet.macroEditor.lineToHtml(line));
-        return result.join(definitionSet.parsing.empty);
-    }; //showEditorMacroHtml
+        return text.replaceAll(definitionSet.typography.lineSeparator, definitionSet.macroEditor.newLine).trim();
+    }; //macroTextToHtml
 
     const addMacroToText = text => {
         const editor = vscode.window.activeTextEditor;
@@ -163,10 +159,10 @@ exports.activate = context => {
                     macroEditor.webview.postMessage({ request: true });
                     break;
                 case definitionSet.macroEditor.choiceTextToMacro:
-                    showEditor(showEditorMacroHtml());
+                    showEditor(macroTextToHtml());
                     break;
                 case definitionSet.macroEditor.choiceSelectionToMacro:
-                    showEditor(showEditorMacroHtml(true));
+                    showEditor(macroTextToHtml(true));
                     break;
             } //switch choice
         }); //showQuickick 

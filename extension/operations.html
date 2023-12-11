@@ -187,7 +187,7 @@ https://www.SAKryukov.org
                     line = `${line} ${value}`;
                 if (checkSelect.checked && selectableActions.has(selectAction.value))
                     line = `${line} select`;
-                item.textContent = line;
+                item.textContent = line.replaceAll("  ", " ");
                 content.appendChild(item);
             }; //add
             buttonAdd.onclick = add;
@@ -198,10 +198,12 @@ https://www.SAKryukov.org
                 } //control.onkeydown
             const getTextContent = parent => {
                 let macro = "";
-                for (const element of parent.childNodes)
+                for (const element of parent.childNodes) {
+                    if (element.constructor == HTMLBRElement) continue;
                     macro += element.constructor == Text
-                        ? element.textContent + "\n"
+                        ? element.textContent.replaceAll("\n", "") + "\n"
                         : getTextContent(element);
+                } //loop
                 return macro;
             }; //getTextContent
             const build = onRequest => {

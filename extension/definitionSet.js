@@ -38,11 +38,11 @@ exports.definitionSet = {
         choiceTextToMacro: "Text to macro script",
         choiceSelectionToMacro: "Selection to macro script",
         htmlFileName: () => __dirname + "/operations.html",
-        lineToHtml: line => `${line}<br/>`,
+        newLine: "<br/>",
     },
     value: {
         default: 1,
-        maximumSize: 12, //SA???
+        maximumSize: 12, //SA!!! sic!
     },
     parsing: {
         empty: "",
