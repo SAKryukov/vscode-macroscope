@@ -108,10 +108,8 @@ exports.activate = context => {
     }; //addMacroToText
 
     const showEditor = macroHtml => {
-        if (macroEditor != null) {
+        if (macroEditor != null)
             macroEditor.reveal();
-            return;
-        } //if
         const pushMacroHtml = () => {
             if (!macroHtml)
                 macroHtml = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
