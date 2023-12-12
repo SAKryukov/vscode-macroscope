@@ -4,20 +4,21 @@
 // using Continue macro
 
 push-position
-move match-in-line-forward [$$$] 1 select
+move forward 3
+[ 123 ]
+pause
+move backward 5 select
 pause
 delete
+
+move down 5
+move forward 2
+[ ABC ]
+pause
+move backward 5 select
+pause
+delete
+
 pop-position
 push-position
 
-move match-in-line-forward [###] 1 select
-pause
-delete
-pop-position
-push-position
-
-move match-in-line-forward [===] 1 select
-pause
-delete
-pop-position
-push-position
