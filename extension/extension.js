@@ -143,6 +143,9 @@ exports.activate = context => {
             updateMacroPlayVisibility();
         }, undefined, context.subscriptions);
         pushMacroHtml();
+        vscode.window.tabGroups.onDidChangeTabs(event => {
+            console.log(event);
+        });
     }; //showEditor
 
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {

@@ -212,7 +212,7 @@ https://www.SAKryukov.org
                 vscode?.postMessage({
                     macro: {
                         text: macro,
-                        onRequest: onRequest,
+                        onRequest: onRequest != null,
                     },
                 })
                 setTimeout(() => content.setAttribute("contenteditable", "true"));
@@ -227,7 +227,7 @@ https://www.SAKryukov.org
                     content.appendChild(newLine);
                 } //loop
             }; //populateHtml
-            buttonBuild.onclick = build;
+            buttonBuild.onclick = () => build(null);
             const preservePersistentMacro = event => {
                 vscode?.postMessage({
                     macro: {
