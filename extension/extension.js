@@ -135,10 +135,14 @@ exports.activate = context => {
     const requestMacroForPersistence = () => {
         macroEditor?.webview.postMessage({ requestForPersistence: true });
     }; //requestMacroForPersistence
+    const requestMacroForFocus = () => {
+        macroEditor?.webview.postMessage({ requestForFocus: true });
+    }; //requestMacroForFocus
 
     const showEditor = macroText => {
         if (macroEditor != null) {
             macroEditor.reveal();
+            requestMacroForFocus();
             pushMacro(macroText);
             return;
         } //if

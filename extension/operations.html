@@ -251,6 +251,8 @@ https://www.SAKryukov.org
                     build(null, event.data.requestForPersistence, false);
                 } else if (event.data.requestForSaveAs) {
                     build(null, false, event.data.requestForSaveAs);
+                } else if (event.data.requestForFocus) {
+                    selectAction.focus();        
                 } //if
             }; //window.onmessage
             selectAction.focus();
