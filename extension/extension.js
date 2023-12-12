@@ -136,9 +136,12 @@ exports.activate = context => {
         macroEditor?.webview.postMessage({ requestForPersistence: true });
     }; //requestMacroForPersistence
 
-    const showEditor = () => {
-        if (macroEditor != null)
+    const showEditor = macroText => {
+        if (macroEditor != null) {
             macroEditor.reveal();
+            pushMacro(macroText);
+            return;
+        } //if
         macroEditor = vscode.window.createWebviewPanel(
             definitionSet.macroEditor.name,
             definitionSet.macroEditor.title,
@@ -173,7 +176,7 @@ exports.activate = context => {
                 if (editorChange(element)) { hasEditorChange = true; break; }
             } //loop
             if (hasEditorChange)
-                pushMacro(null);
+                pushMacro(macroText);
             else
                 requestMacroForPersistence();
         }); //vscode.window.tabGroups.onDidChangeTabs
@@ -193,10 +196,10 @@ exports.activate = context => {
                     requestMacroForSaveAs();
                     break;
                 case definitionSet.macroEditor.choiceTextToMacro:
-                    pushMacro(extractMacroText());
+                    showEditor(extractMacroText());
                     break;
                 case definitionSet.macroEditor.choiceSelectionToMacro:
-                    pushMacro(extractMacroText(true));
+                    showEditor(extractMacroText(true));
                     break;
             } //switch choice
         }); //showQuickick 
