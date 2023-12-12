@@ -152,12 +152,12 @@ exports.activate = context => {
             vscode.ViewColumn.Two,
             { enableScripts: true }
         ); //panel
-        macroEditor.onDidDispose(() => macroEditor = null);
+        context.subscriptions.push(macroEditor.onDidDispose(() => macroEditor = null));
         macroEditor.webview.html = fileSystem.readFileSync(
             definitionSet.macroEditor.htmlFileName()).toString()
             .replace("?product?", metadata.extensionDisplayName)
             .replace("?version?", metadata.version);
-        macroEditor.webview.onDidReceiveMessage(message => {
+        context.subscriptions.push(macroEditor.webview.onDidReceiveMessage(message => {
             if (message.macro.requestForSaveAs) {
                 addMacroToText(message.macro.text);
             } else if (message.macro.requestForPersistence) {
@@ -167,7 +167,7 @@ exports.activate = context => {
                 handleMacro(message.macro.text);
             } //if on request
             updateMacroPlayVisibility();
-        }, undefined, context.subscriptions);
+        }, undefined, context.subscriptions));
         const indicatingViewType = macroEditor.viewType;
         // SA!!! workaround due to the present VSCode bug #71339,
         // onDidChangeViewState event not fired
@@ -188,8 +188,8 @@ exports.activate = context => {
             } else
                 requestMacroForPersistence();
         }; //handleTabChange
-        vscode.window.tabGroups.onDidChangeTabs(event => handleTabChange(event, false));
-        vscode.window.tabGroups.onDidChangeTabGroups(event => handleTabChange(event, true));
+        context.subscriptions.push(vscode.window.tabGroups.onDidChangeTabs(event => handleTabChange(event, false)));
+        context.subscriptions.push(vscode.window.tabGroups.onDidChangeTabGroups(event => handleTabChange(event, true)));
     }; //showEditor
 
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
