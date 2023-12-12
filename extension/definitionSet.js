@@ -30,7 +30,7 @@ exports.definitionSet = {
         itemToolTip: "Use commands: Macroscope: Macro Editor, Macroscope: Play Macro"
     },
     macroEditor: {
-        name: "macro.editor",
+        name: "SAKryukov.org:Macroscope::macro.editor",
         title: "Macroscope Macro Editor",
         quickPickTitle: "Macro Editor",
         choiceShow: "Show",
