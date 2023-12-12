@@ -172,18 +172,24 @@ exports.activate = context => {
         // SA!!! workaround due to the present VSCode bug #71339,
         // onDidChangeViewState event not fired
         // https://github.com/Microsoft/vscode/issues/71339:
-        vscode.window.tabGroups.onDidChangeTabs(event => {
-            const editorChange = arrayElement =>
-                arrayElement.input.viewType && arrayElement.input.viewType.endsWith(indicatingViewType);
+        const handleTabChange = (event, group) => {
+            const editorChange = arrayElement => group
+                ? arrayElement.activeTab?.input?.viewType &&
+                    arrayElement.activeTab.input.viewType.endsWith(indicatingViewType)
+                : arrayElement.input?.viewType &&
+                    arrayElement.input.viewType.endsWith(indicatingViewType)
             let hasEditorChange = false;
             for (const element of event.changed) {
                 if (editorChange(element)) { hasEditorChange = true; break; }
             } //loop
-            if (hasEditorChange)
+            if (hasEditorChange) {
                 pushMacro(macroText);
-            else
+                requestMacroForFocus();
+            } else
                 requestMacroForPersistence();
-        }); //vscode.window.tabGroups.onDidChangeTabs
+        }; //handleTabChange
+        vscode.window.tabGroups.onDidChangeTabs(event => handleTabChange(event, false));
+        vscode.window.tabGroups.onDidChangeTabGroups(event => handleTabChange(event, true));
     }; //showEditor
 
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
