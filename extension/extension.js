@@ -27,17 +27,20 @@ exports.activate = context => {
 
     let macroEditor, macro, statusBarItem;
 
-    const updateMacroPlayVisibility = () => {
-        const isVisible = vscode.window.activeTextEditor != null && macro != null;
-        if (!statusBarItem) {
-            statusBarItem = vscode.window.createStatusBarItem(
+    const createStatusBarItem = () => {
+        if (statusBarItem) return;
+        statusBarItem = vscode.window.createStatusBarItem(
             "macroscope.statusBarItem", // unused
             vscode.StatusBarAlignment.Left); // SA!!! I don't like vscode.StatusBarAlignment.Right,
                                              // because it requires pretty stupid "priority" argument
                 statusBarItem.text = definitionSet.statusBar.itemText;
                 statusBarItem.tooltip = definitionSet.statusBar.itemToolTip;
                 statusBarItem.command = definitionSet.commands.macroPlay;
-        } //if
+    }; //createStatusBarItem
+
+    const updateMacroPlayVisibility = () => {
+        const isVisible = vscode.window.activeTextEditor != null && macro != null;
+        createStatusBarItem();      
         if (isVisible)
             statusBarItem.show();
         else
@@ -57,6 +60,7 @@ exports.activate = context => {
           const isVisible = vscode.window.activeTextEditor != null && macro != null;
           if (!isVisible) return;
             textProcessor.play(textEditor, macro).then(isPaused => {
+                createStatusBarItem();
                 statusBarItem.text = isPaused
                     ? definitionSet.statusBar.itemTextContinue
                     : definitionSet.statusBar.itemText;
@@ -103,17 +107,35 @@ exports.activate = context => {
         textProcessor.placeText(editor, text);
     }; //addMacroToText
 
+    const pushMacro = macroText => {
+        if (macroText == null)
+            macroText = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
+        else
+            context.workspaceState.update(definitionSet.scriptPersistentStateKey, macroText);
+        if (macroText == null) return;
+        const errors = languageEngine.parse(macroText);
+        macroEditor.webview.postMessage({ text: macroText });
+        macroEditor.webview.postMessage({ errors: errors });
+        if (errors == null) {
+            textProcessor.resetPause();
+            macro = languageEngine.operations;
+            createStatusBarItem();
+            statusBarItem.text = definitionSet.statusBar.itemTextNew;
+        } //if 
+    }; //pushMacro
+
+    const requestMacroForSaveAs = () => {
+        macroEditor?.webview.postMessage({ requestForSaveAs: true });
+    }; //requestMacroForSaveAs
+    const requestMacroForPersistence = () => {
+        macroEditor?.webview.postMessage({ requestForPersistence: true });
+    }; //requestMacroForPersistence
+
     const showEditor = macroText => {
         if (macroEditor != null)
             macroEditor.reveal();
-        const pushMacroHtml = () => {
-            if (!macroText)
-                macroText = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
-            if (macroText)
-                macroEditor.webview.postMessage({ text: macroText });
-        } // pushMacroHtml
         if (macroEditor != null) {
-            pushMacroHtml();
+            pushMacro(null);
             return;
         } //if
         macroEditor = vscode.window.createWebviewPanel(
@@ -128,23 +150,36 @@ exports.activate = context => {
             .replace("?product?", metadata.extensionDisplayName)
             .replace("?version?", metadata.version);
         macroEditor.webview.onDidReceiveMessage(message => {
-            if (message.macro.onRequest) {
+            if (message.macro.requestForSaveAs) {
                 addMacroToText(message.macro.text);
+            } else if (message.macro.requestForPersistence) {
+                context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.text);    
             } else {
                 context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.text);
                 const errors = languageEngine.parse(message.macro.text);
-                macroEditor.webview.postMessage({ errors: errors });
+                macroEditor.webview.postMessage({ errors: errors }); //SA???
                 if (errors == null) {
                     textProcessor.resetPause();
                     macro = languageEngine.operations;
+                    createStatusBarItem();
                     statusBarItem.text = definitionSet.statusBar.itemTextNew;
                 } //if    
             } //if on request
             updateMacroPlayVisibility();
         }, undefined, context.subscriptions);
-        pushMacroHtml();
+        pushMacro(null);
+        const indicatingViewType = macroEditor.viewType;
         vscode.window.tabGroups.onDidChangeTabs(event => {
-            console.log(event);
+            const editorChange = arrayElement =>
+                arrayElement.input.viewType && arrayElement.input.viewType.endsWith(indicatingViewType);
+            let hasEditorChange = false;
+            for (const element of event.changed) {
+                if (editorChange(element)) { hasEditorChange = true; break; }
+            } //loop
+            if (hasEditorChange)
+                pushMacro(null);
+            else
+                requestMacroForPersistence();
         });
     }; //showEditor
 
@@ -159,7 +194,7 @@ exports.activate = context => {
                     showEditor(null);
                     break;
                 case definitionSet.macroEditor.choiceEditorToText:
-                    macroEditor.webview.postMessage({ request: true });
+                    requestMacroForSaveAs();
                     break;
                 case definitionSet.macroEditor.choiceTextToMacro:
                     showEditor(extractMacroText());

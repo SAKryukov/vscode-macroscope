@@ -173,6 +173,34 @@ https://www.SAKryukov.org
                 if (!valueFilter.has(event.key) && event.key != "Backspace" && event.key != "Tab")
                     event.preventDefault();
             }; //editValue.onkeydown
+            for (const control of [selectAction, selectMove])
+                control.onkeydown = event => {
+                    if (event.key == "Enter")
+                        add();
+                } //control.onkeydown
+            const getTextContent = parent => {
+                let macro = "";
+                for (const element of parent.childNodes) {
+                    if (element.constructor == HTMLBRElement) continue;
+                    macro += element.constructor == Text
+                        ? element.textContent.replaceAll("\n", "") + "\n"
+                        : getTextContent(element);
+                } //loop
+                return macro;
+            }; //getTextContent
+            const build = (event, requestForPersistence, requestForSaveAs) => {
+                let macro = getTextContent(content);
+                content.setAttribute("contenteditable", "false");
+                vscode?.postMessage({
+                    macro: {
+                        text: macro,
+                        requestForPersistence: requestForPersistence,
+                        requestForSaveAs: requestForSaveAs,
+                    },
+                })
+                setTimeout(() => content.setAttribute("contenteditable", "true"));
+            }; //build
+            const persist = () => build(null, true, false);
             const add = () => {
                 const item = document.createElement("p");
                 let line = `${selectAction.value}`;
@@ -189,34 +217,10 @@ https://www.SAKryukov.org
                     line = `${line} select`;
                 item.textContent = line.replaceAll("  ", " ");
                 content.appendChild(item);
+                persist();
             }; //add
-            buttonAdd.onclick = add;
-            for (const control of [selectAction, selectMove])
-                control.onkeydown = event => {
-                    if (event.key == "Enter")
-                        add();
-                } //control.onkeydown
-            const getTextContent = parent => {
-                let macro = "";
-                for (const element of parent.childNodes) {
-                    if (element.constructor == HTMLBRElement) continue;
-                    macro += element.constructor == Text
-                        ? element.textContent.replaceAll("\n", "") + "\n"
-                        : getTextContent(element);
-                } //loop
-                return macro;
-            }; //getTextContent
-            const build = onRequest => {
-                let macro = getTextContent(content);
-                content.setAttribute("contenteditable", "false");
-                vscode?.postMessage({
-                    macro: {
-                        text: macro,
-                        onRequest: onRequest != null,
-                    },
-                })
-                setTimeout(() => content.setAttribute("contenteditable", "true"));
-            }; //build
+            for (const element of [buttonBuild, selectAction, selectMove, editValue, buttonAdd, checkSelect, content])
+                element.onblur = persist;
             const populateHtml = (content, text) => {
                 content.innerHTML = "";
                 const split = text.split("\n");
@@ -227,16 +231,8 @@ https://www.SAKryukov.org
                     content.appendChild(newLine);
                 } //loop
             }; //populateHtml
-            buttonBuild.onclick = () => build(null);
-            const preservePersistentMacro = event => {
-                vscode?.postMessage({
-                    macro: {
-                        text: getTextContent(content),
-                    },
-                });
-            } //preservePersistentMacro
-            content.onblur = preservePersistentMacro;
-            content.onfocus = preservePersistentMacro;
+            buttonBuild.onclick = build;
+            buttonAdd.onclick = add;
             window.onmessage = event => {
                 while (errors.firstChild) 
                     errors.removeChild(errors.lastChild);
@@ -250,9 +246,11 @@ https://www.SAKryukov.org
                     } //loop
                 else if (event.data.text) {
                     populateHtml(content, event.data.text);
-                    build();
-                } else if (event.data.request) {
-                    build(event.data.request);
+                    build(null, false, false);
+                } else if (event.data.requestForPersistence) {
+                    build(null, event.data.requestForPersistence, false);
+                } else if (event.data.requestForSaveAs) {
+                    build(null, false, event.data.requestForSaveAs);
                 } //if
             }; //window.onmessage
             selectAction.focus();
