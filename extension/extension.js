@@ -107,14 +107,8 @@ exports.activate = context => {
         textProcessor.placeText(editor, text);
     }; //addMacroToText
 
-    const pushMacro = macroText => {
-        if (macroText == null)
-            macroText = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
-        else
-            context.workspaceState.update(definitionSet.scriptPersistentStateKey, macroText);
-        if (macroText == null) return;
+    const handleMacro = macroText => {
         const errors = languageEngine.parse(macroText);
-        macroEditor.webview.postMessage({ text: macroText });
         macroEditor.webview.postMessage({ errors: errors });
         if (errors == null) {
             textProcessor.resetPause();
@@ -122,6 +116,17 @@ exports.activate = context => {
             createStatusBarItem();
             statusBarItem.text = definitionSet.statusBar.itemTextNew;
         } //if 
+    } //handleMacro
+
+    const pushMacro = macroText => {
+        if (macroEditor == null) return;
+        if (macroText == null)
+            macroText = context.workspaceState.get(definitionSet.scriptPersistentStateKey);
+        else
+            context.workspaceState.update(definitionSet.scriptPersistentStateKey, macroText);
+        if (macroText == null) return;
+        macroEditor.webview.postMessage({ text: macroText });
+        handleMacro(macroText);
     }; //pushMacro
 
     const requestMacroForSaveAs = () => {
@@ -131,13 +136,9 @@ exports.activate = context => {
         macroEditor?.webview.postMessage({ requestForPersistence: true });
     }; //requestMacroForPersistence
 
-    const showEditor = macroText => {
+    const showEditor = () => {
         if (macroEditor != null)
             macroEditor.reveal();
-        if (macroEditor != null) {
-            pushMacro(null);
-            return;
-        } //if
         macroEditor = vscode.window.createWebviewPanel(
             definitionSet.macroEditor.name,
             definitionSet.macroEditor.title,
@@ -156,19 +157,14 @@ exports.activate = context => {
                 context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.text);    
             } else {
                 context.workspaceState.update(definitionSet.scriptPersistentStateKey, message.macro.text);
-                const errors = languageEngine.parse(message.macro.text);
-                macroEditor.webview.postMessage({ errors: errors }); //SA???
-                if (errors == null) {
-                    textProcessor.resetPause();
-                    macro = languageEngine.operations;
-                    createStatusBarItem();
-                    statusBarItem.text = definitionSet.statusBar.itemTextNew;
-                } //if    
+                handleMacro(message.macro.text);
             } //if on request
             updateMacroPlayVisibility();
         }, undefined, context.subscriptions);
-        pushMacro(null);
         const indicatingViewType = macroEditor.viewType;
+        // SA!!! workaround due to the present VSCode bug #71339,
+        // onDidChangeViewState event not fired
+        // https://github.com/Microsoft/vscode/issues/71339:
         vscode.window.tabGroups.onDidChangeTabs(event => {
             const editorChange = arrayElement =>
                 arrayElement.input.viewType && arrayElement.input.viewType.endsWith(indicatingViewType);
@@ -180,7 +176,7 @@ exports.activate = context => {
                 pushMacro(null);
             else
                 requestMacroForPersistence();
-        });
+        }); //vscode.window.tabGroups.onDidChangeTabs
     }; //showEditor
 
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
@@ -197,10 +193,10 @@ exports.activate = context => {
                     requestMacroForSaveAs();
                     break;
                 case definitionSet.macroEditor.choiceTextToMacro:
-                    showEditor(extractMacroText());
+                    pushMacro(extractMacroText());
                     break;
                 case definitionSet.macroEditor.choiceSelectionToMacro:
-                    showEditor(extractMacroText(true));
+                    pushMacro(extractMacroText(true));
                     break;
             } //switch choice
         }); //showQuickick 
