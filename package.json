@@ -48,6 +48,15 @@
                     "command": "macroscope.macro.play",
                     "when": "macroscope.macro.play.visible"
                 }
+            ],
+            "editor/context": [
+                {
+                    "command": "macroscope.macro.editor.start"
+                },
+                {
+                    "command": "macroscope.macro.play",
+                    "when": "macroscope.macro.play.visible"
+                }
             ]
         },
         "__metadata": {
