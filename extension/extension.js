@@ -152,6 +152,17 @@ exports.activate = context => {
             vscode.ViewColumn.Two,
             { enableScripts: true }
         ); //panel
+        const previousState = { visible: true, active: true };
+        context.subscriptions.push(macroEditor.onDidChangeViewState(panel => {
+            if (!previousState.active && panel.webviewPanel.active)
+                requestMacroForFocus();
+            if (!previousState.visible && panel.webviewPanel.visible)
+                pushMacro(macroText);
+            previousState.visible = panel.webviewPanel.visible;
+            previousState.active = panel.webviewPanel.active;
+        })); //macroEditor.onDidChangeViewState
+        pushMacro(macroText);
+        requestMacroForFocus();
         context.subscriptions.push(macroEditor.onDidDispose(() => macroEditor = null));
         macroEditor.webview.html = fileSystem.readFileSync(
             definitionSet.macroEditor.htmlFileName()).toString()
@@ -168,28 +179,6 @@ exports.activate = context => {
             } //if on request
             updateMacroPlayVisibility();
         }, undefined, context.subscriptions));
-        const indicatingViewType = macroEditor.viewType;
-        // SA!!! workaround due to the present VSCode bug #71339,
-        // onDidChangeViewState event not fired
-        // https://github.com/Microsoft/vscode/issues/71339:
-        const handleTabChange = (event, group) => {
-            const editorChange = arrayElement => group
-                ? arrayElement.activeTab?.input?.viewType &&
-                    arrayElement.activeTab.input.viewType.endsWith(indicatingViewType)
-                : arrayElement.input?.viewType &&
-                    arrayElement.input.viewType.endsWith(indicatingViewType)
-            let hasEditorChange = false;
-            for (const element of event.changed) {
-                if (editorChange(element)) { hasEditorChange = true; break; }
-            } //loop
-            if (hasEditorChange) {
-                pushMacro(macroText);
-                requestMacroForFocus();
-            } else
-                requestMacroForPersistence();
-        }; //handleTabChange
-        context.subscriptions.push(vscode.window.tabGroups.onDidChangeTabs(event => handleTabChange(event, false)));
-        context.subscriptions.push(vscode.window.tabGroups.onDidChangeTabGroups(event => handleTabChange(event, true)));
     }; //showEditor
 
     context.subscriptions.push(vscode.commands.registerCommand(definitionSet.commands.macroEditor, () => {
