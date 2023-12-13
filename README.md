@@ -79,3 +79,7 @@ move end-trimmed-line
 
 ***Spoiler:*** The Markdown example is just an example. Don't do it!
 Instead, use highly comprehensive [Extensible Markdown](https://marketplace.visualstudio.com/items?itemName=sakryukov.extensible-markdown).
+
+### Installation
+
+[Macroscope On Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=sakryukov.macroscope)
