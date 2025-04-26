@@ -9,7 +9,7 @@ https://www.SAKryukov.org
 "use strict";
 
 const vscode = require("vscode");
-const fileSystem = require("fs");
+const fileSystem = vscode.workspace.fs;
 const language = require("./language");
 const definitionSet = require("./definitionSet").definitionSet;
 const languageEngine = new language.RuleEngine(definitionSet);
